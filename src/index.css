@@ -1,0 +1,66 @@
+/* 컬러 팔레트 디자인 시스템 — 현대자동차 웹사이트 기반 */
+:root {
+  --color-primary:        #002C5F;
+  --color-primary-light:  #1A4A7A;
+  --color-primary-dark:   #001A3A;
+
+  --color-secondary:      #1A1A1A;
+  --color-accent:         #00AAD2;
+
+  --color-bg-primary:     #FFFFFF;
+  --color-bg-secondary:   #F4F4F4;
+  --color-bg-dark:        #1A1A1A;
+
+  --color-text-primary:   #222222;
+  --color-text-secondary: #444444;
+  --color-text-muted:     #888888;
+  --color-text-on-dark:   #FFFFFF;
+
+  --color-border-light:   #DDDDDD;
+  --color-border-medium:  #BBBBBB;
+
+  --color-button-primary: #002C5F;
+  --color-button-hover:   #00AAD2;
+  --color-link:           #002C5F;
+  --color-link-hover:     #00AAD2;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-link-hover);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary:     #121212;
+    --color-bg-secondary:   #1E1E1E;
+    --color-bg-dark:        #0A0A0A;
+    --color-text-primary:   #F0F0F0;
+    --color-text-secondary: #CCCCCC;
+    --color-text-muted:     #888888;
+    --color-border-light:   #333333;
+    --color-border-medium:  #555555;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-dark {
+    background-color: #252525;
+  }
+}
