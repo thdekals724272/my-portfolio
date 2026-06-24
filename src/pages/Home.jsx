@@ -19,6 +19,11 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
 import SendIcon from '@mui/icons-material/Send';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import { supabase } from '../lib/supabase';
 
 const EMOJIS = ['👋', '😊', '🚀', '💼', '🌏', '🤝', '✨', '💡', '🎯', '❤️'];
@@ -294,12 +299,16 @@ function ProjectsSection() {
 /* ─── Contact 섹션 ─── */
 function ContactSection() {
   const [copied, setCopied] = useState(false);
-  const [form, setForm] = useState({ name: '', message: '', company: '', region: '', emoji: '👋' });
+  const [form, setForm] = useState({ name: '', message: '', company: '', region: '', emoji: '👋', password: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [guestbook, setGuestbook] = useState([]);
   const [loadingGuests, setLoadingGuests] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const EMAIL = 'thdekals724272@gmail.com';
   const WHATSAPP = '+82-10-0000-0000';
@@ -338,15 +347,45 @@ function ContactSection() {
       company: form.company.trim() || null,
       region: form.region || null,
       emoji: form.emoji,
+      password: form.password.trim() || null,
     });
 
     setSubmitting(false);
     if (error) {
       setSubmitError('등록 중 오류가 발생했습니다. 다시 시도해주세요.');
     } else {
-      setForm({ name: '', message: '', company: '', region: '', emoji: '👋' });
+      setForm({ name: '', message: '', company: '', region: '', emoji: '👋', password: '' });
       setSubmitSuccess(true);
       fetchGuestbook();
+    }
+  };
+
+  const handleDeleteOpen = (id) => {
+    setDeleteTarget(id);
+    setDeletePassword('');
+    setDeleteError('');
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteTarget(null);
+    setDeletePassword('');
+    setDeleteError('');
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletePassword.trim()) return;
+    setDeleting(true);
+    setDeleteError('');
+    const { data, error } = await supabase.rpc('delete_guestbook_entry', {
+      entry_id: deleteTarget,
+      entry_password: deletePassword,
+    });
+    setDeleting(false);
+    if (error || !data) {
+      setDeleteError('비밀번호가 올바르지 않습니다. 다시 확인해주세요.');
+    } else {
+      setGuestbook((prev) => prev.filter((e) => e.id !== deleteTarget));
+      handleDeleteClose();
     }
   };
 
@@ -611,6 +650,19 @@ function ContactSection() {
             placeholder="짧은 인사나 메시지를 남겨주세요."
           />
 
+          {/* 삭제 비밀번호 */}
+          <TextField
+            label="삭제 비밀번호 (선택)"
+            type="password"
+            size="small"
+            fullWidth
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            inputProps={{ 'data-gramm': 'false', spellCheck: false, maxLength: 50 }}
+            helperText="비밀번호를 설정하면 나중에 내 글을 직접 삭제할 수 있어요."
+            sx={{ mb: 3, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          />
+
           {submitError && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{submitError}</Alert>}
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -686,6 +738,16 @@ function ContactSection() {
                     <Typography variant="caption" sx={{ color: '#CBD5E1', ml: 'auto' }}>
                       {formatDate(entry.created_at)}
                     </Typography>
+                    {entry.password && (
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteOpen(entry.id)}
+                        title="삭제"
+                        sx={{ color: '#CBD5E1', '&:hover': { color: '#EF4444' }, flexShrink: 0 }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    )}
                   </Box>
                   <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.7, wordBreak: 'break-word' }}>
                     {entry.message}
@@ -703,6 +765,44 @@ function ContactSection() {
           방명록이 등록되었습니다! 감사합니다 😊
         </Alert>
       </Snackbar>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={deleteTarget !== null} onClose={handleDeleteClose} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#0F172A' }}>방명록 삭제</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: '#64748B', mb: 2 }}>
+            작성 시 입력한 비밀번호를 입력하면 삭제됩니다.
+          </Typography>
+          <TextField
+            label="비밀번호"
+            type="password"
+            fullWidth
+            size="small"
+            autoFocus
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleDeleteConfirm()}
+            inputProps={{ 'data-gramm': 'false', spellCheck: false }}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          />
+          {deleteError && (
+            <Alert severity="error" sx={{ mt: 1.5, borderRadius: 2 }}>{deleteError}</Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button onClick={handleDeleteClose} sx={{ color: '#64748B' }}>
+            취소
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteConfirm}
+            disabled={deleting || !deletePassword.trim()}
+            sx={{ backgroundColor: '#EF4444', '&:hover': { backgroundColor: '#DC2626' }, borderRadius: 2 }}
+          >
+            {deleting ? '삭제 중...' : '삭제'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
