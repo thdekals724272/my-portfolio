@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useInView } from '../hooks/useInView';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -23,6 +24,23 @@ import { supabase } from '../lib/supabase';
 const EMOJIS = ['👋', '😊', '🚀', '💼', '🌏', '🤝', '✨', '💡', '🎯', '❤️'];
 
 const REGIONS = ['서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주', '해외'];
+
+function FadeIn({ children, delay = 0, direction = 'up' }) {
+  const [ref, inView] = useInView();
+  const translate = direction === 'up' ? 'translateY(28px)' : 'translateY(-12px)';
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translateY(0)' : translate,
+        transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
 
 const sectionLabel = {
   display: 'inline-block',
@@ -108,6 +126,7 @@ function AboutSection() {
   return (
     <Box component="section" sx={{ backgroundColor: '#FFFFFF', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md" sx={{ textAlign: 'center' }}>
+        <FadeIn>
         <Box sx={sectionLabel}>About Me</Box>
         <Typography variant="h3" sx={{ mb: 2, fontWeight: 700, color: '#222222' }}>
           자기소개
@@ -143,6 +162,7 @@ function AboutSection() {
         >
           더 알아보기
         </Button>
+        </FadeIn>
       </Container>
     </Box>
   );
@@ -153,6 +173,7 @@ function SkillSection() {
   return (
     <Box component="section" sx={{ backgroundColor: '#F4F4F4', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md" sx={{ textAlign: 'center' }}>
+        <FadeIn>
         <Box sx={sectionLabel}>Skill Tree</Box>
         <Typography variant="h3" sx={{ mb: 2, fontWeight: 700, color: '#222222' }}>
           기술 스택
@@ -189,6 +210,7 @@ function SkillSection() {
             ))}
           </Box>
         </Box>
+        </FadeIn>
       </Container>
     </Box>
   );
@@ -199,6 +221,7 @@ function ProjectsSection() {
   return (
     <Box component="section" sx={{ backgroundColor: '#FFFFFF', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md" sx={{ textAlign: 'center' }}>
+        <FadeIn>
         <Box sx={sectionLabel}>Projects</Box>
         <Typography variant="h3" sx={{ mb: 2, fontWeight: 700, color: '#222222' }}>
           대표 프로젝트
@@ -206,6 +229,7 @@ function ProjectsSection() {
         <Typography variant="body2" sx={{ mb: 5, color: '#888888' }}>
           여기는 Projects 섹션입니다. 대표작 썸네일 3-4개와 '더 보기' 버튼이 들어갈 예정입니다.
         </Typography>
+        </FadeIn>
         <Box
           sx={{
             display: 'grid',
@@ -214,9 +238,9 @@ function ProjectsSection() {
             mb: 5,
           }}
         >
-          {['Project 01', 'Project 02', 'Project 03'].map((proj) => (
+          {['Project 01', 'Project 02', 'Project 03'].map((proj, i) => (
+            <FadeIn key={proj} delay={i * 120}>
             <Box
-              key={proj}
               sx={{
                 backgroundColor: '#F4F4F4',
                 borderRadius: 3,
@@ -243,8 +267,10 @@ function ProjectsSection() {
                 썸네일 영역
               </Typography>
             </Box>
+            </FadeIn>
           ))}
         </Box>
+        <FadeIn delay={360}>
         <Button
           variant="outlined"
           component={Link}
@@ -259,6 +285,7 @@ function ProjectsSection() {
         >
           더 보기
         </Button>
+        </FadeIn>
       </Container>
     </Box>
   );
@@ -333,6 +360,7 @@ function ContactSection() {
       <Container maxWidth="md">
 
         {/* 섹션 헤더 */}
+        <FadeIn>
         <Box sx={{ textAlign: 'center', mb: 7 }}>
           <Box sx={sectionLabel}>Contact</Box>
           <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', mb: 1.5 }}>
@@ -342,8 +370,10 @@ function ContactSection() {
             언제든지 편하게 연락해주세요. 빠르게 답변드리겠습니다.
           </Typography>
         </Box>
+        </FadeIn>
 
         {/* 연락처 카드 */}
+        <FadeIn delay={100}>
         <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: { xs: 'column', sm: 'row' } }}>
           {/* 이메일 카드 */}
           <Box
@@ -429,7 +459,10 @@ function ContactSection() {
           </Box>
         </Box>
 
+        </FadeIn>
+
         {/* SNS 아이콘 링크 */}
+        <FadeIn delay={200}>
         <Box sx={{ display: 'flex', gap: 1, mb: 7, justifyContent: 'center' }}>
           {[
             { icon: <GitHubIcon />, label: 'GitHub', href: 'https://github.com/thdekals724272', color: '#1A1A1A' },
@@ -459,9 +492,12 @@ function ContactSection() {
           ))}
         </Box>
 
+        </FadeIn>
+
         <Divider sx={{ mb: 7, borderColor: '#E2E8F0' }} />
 
         {/* 방명록 섹션 */}
+        <FadeIn>
         <Box sx={{ textAlign: 'center', mb: 5 }}>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0F172A', mb: 1 }}>
             방명록
@@ -470,6 +506,7 @@ function ContactSection() {
             방문해주셔서 감사합니다. 짧은 메시지를 남겨주세요 😊
           </Typography>
         </Box>
+        </FadeIn>
 
         {/* 방명록 작성 폼 */}
         <Box
