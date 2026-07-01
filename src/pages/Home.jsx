@@ -360,8 +360,18 @@ function ContactSection() {
     }
   };
 
-  const handleDeleteOpen = (id) => {
-    setDeleteTarget(id);
+  const handleDeleteOpen = async (entry) => {
+    if (!entry.password) {
+      setDeleting(true);
+      await supabase.rpc('delete_guestbook_entry', {
+        entry_id: entry.id,
+        entry_password: '',
+      });
+      setGuestbook((prev) => prev.filter((e) => e.id !== entry.id));
+      setDeleting(false);
+      return;
+    }
+    setDeleteTarget(entry.id);
     setDeletePassword('');
     setDeleteError('');
   };
@@ -738,16 +748,14 @@ function ContactSection() {
                     <Typography variant="caption" sx={{ color: '#CBD5E1', ml: 'auto' }}>
                       {formatDate(entry.created_at)}
                     </Typography>
-                    {entry.password && (
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteOpen(entry.id)}
-                        title="삭제"
-                        sx={{ color: '#CBD5E1', '&:hover': { color: '#EF4444' }, flexShrink: 0 }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    )}
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteOpen(entry)}
+                      title="삭제"
+                      sx={{ color: '#CBD5E1', '&:hover': { color: '#EF4444' }, flexShrink: 0 }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </Box>
                   <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.7, wordBreak: 'break-word' }}>
                     {entry.message}
