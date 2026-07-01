@@ -12,13 +12,16 @@ import { BrowserRouter } from 'react-router-dom';
 
 import theme from './theme.js';
 import App from './App.jsx';
+import { PortfolioProvider } from './context/PortfolioContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter basename="/my-portfolio">
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <App />
+        <PortfolioProvider>
+          <App />
+        </PortfolioProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
-import { aboutMeData } from '../data/aboutMeData';
-import { skillsData, ICON_EMOJI, CATEGORY_META } from '../data/skillsData';
+import { usePortfolio } from '../context/PortfolioContext';
+import { ICON_EMOJI, CATEGORY_META } from '../data/skillsData';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -237,12 +237,13 @@ function HeroSection() {
 
 // ─── About ────────────────────────────────────────────────────
 function AboutSection() {
-  const { basicInfo, sections } = aboutMeData;
-  const homeSections = sections.filter((s) => s.showInHome);
+  const { getHomeData } = usePortfolio();
+  const { content, skills: topSkills, basicInfo } = getHomeData();
 
   return (
     <Box component="section" sx={{ backgroundColor: '#FFFFFF', py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
+        {/* Header */}
         <FadeIn>
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={sectionLabel}>About Me</Box>
@@ -255,45 +256,116 @@ function AboutSection() {
           </Box>
         </FadeIn>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 5 }}>
-          {homeSections.map((section, i) => (
-            <FadeIn key={section.id} delay={i * 90}>
-              <Box
-                sx={{
-                  display: 'flex', gap: 2.5, alignItems: 'flex-start',
-                  background: 'rgba(255,255,255,0.75)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(99,102,241,0.1)',
-                  borderRadius: '20px',
-                  p: 3,
-                  boxShadow: '0 2px 14px rgba(99,102,241,0.06)',
-                  transition: 'all 0.25s ease',
-                  '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 10px 30px rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' },
-                }}
-              >
+        {/* 2-col: stories + profile card */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto' }, gap: 3, mb: 4, alignItems: 'start' }}>
+          {/* Left — Story cards */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {content.map((section, i) => (
+              <FadeIn key={section.id} delay={i * 80}>
                 <Box
                   sx={{
-                    width: 44, height: 44, borderRadius: '13px', flexShrink: 0,
-                    background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22,
+                    display: 'flex', gap: 2.5, alignItems: 'flex-start',
+                    background: 'rgba(255,255,255,0.75)',
+                    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(99,102,241,0.1)',
+                    borderRadius: '20px', p: 3,
+                    boxShadow: '0 2px 14px rgba(99,102,241,0.06)',
+                    transition: 'all 0.25s ease',
+                    '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 10px 30px rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' },
                   }}
                 >
-                  {section.emoji}
+                  <Box sx={{ width: 44, height: 44, borderRadius: '13px', flexShrink: 0, background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
+                    {section.emoji}
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '0.93rem' }}>
+                      {section.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#64748B', lineHeight: 1.8, fontSize: '0.85rem' }}>
+                      {section.summary}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '0.93rem' }}>
-                    {section.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#64748B', lineHeight: 1.8, fontSize: '0.85rem' }}>
-                    {section.content}
-                  </Typography>
-                </Box>
+              </FadeIn>
+            ))}
+          </Box>
+
+          {/* Right — Profile mini-card */}
+          <FadeIn delay={150}>
+            <Box
+              sx={{
+                width: { xs: '100%', md: 220 },
+                background: 'rgba(255,255,255,0.75)',
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(99,102,241,0.12)',
+                borderRadius: '24px', p: 3,
+                boxShadow: '0 4px 20px rgba(99,102,241,0.07)',
+                textAlign: 'center',
+              }}
+            >
+              {/* Photo */}
+              <Box
+                sx={{
+                  width: 76, height: 76, borderRadius: '50%', mx: 'auto', mb: 1.5,
+                  background: basicInfo.photo ? 'transparent' : G,
+                  border: '3px solid rgba(255,255,255,0.9)',
+                  boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
+                  overflow: 'hidden',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 34,
+                }}
+              >
+                {basicInfo.photo
+                  ? <Box component="img" src={basicInfo.photo} alt="프로필" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : '👤'
+                }
               </Box>
-            </FadeIn>
-          ))}
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '0.95rem' }}>
+                {basicInfo.name}
+              </Typography>
+              <Box sx={{ display: 'inline-block', px: 1.5, py: 0.4, borderRadius: '999px', background: G, color: '#FFF', fontSize: '0.68rem', fontWeight: 700, mb: 2, lineHeight: 1.5 }}>
+                {basicInfo.position}
+              </Box>
+              <Box sx={{ height: '1px', background: 'rgba(99,102,241,0.1)', mb: 2 }} />
+              <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, fontSize: '0.65rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 0.5 }}>
+                관심 분야
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.78rem', lineHeight: 1.6 }}>
+                {basicInfo.interest}
+              </Typography>
+            </Box>
+          </FadeIn>
         </Box>
+
+        {/* Top skills pills */}
+        {topSkills.length > 0 && (
+          <FadeIn delay={200}>
+            <Box sx={{ mb: 5 }}>
+              <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, fontSize: '0.68rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
+                주요 스킬
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.2, flexWrap: 'wrap' }}>
+                {topSkills.map((skill) => {
+                  const meta = CATEGORY_META[skill.category] || { color: '#6366F1', bg: '#EEF2FF' };
+                  return (
+                    <Box
+                      key={skill.id}
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 0.8,
+                        borderRadius: '12px', background: meta.bg, border: `1.5px solid ${meta.color}25`,
+                        transition: 'all 0.22s ease',
+                        '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 6px 16px ${meta.color}22`, border: `1.5px solid ${meta.color}50` },
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 16, lineHeight: 1 }}>{ICON_EMOJI[skill.icon] || '🔧'}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.82rem' }}>{skill.name}</Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+          </FadeIn>
+        )}
 
         <FadeIn delay={300}>
           <Box sx={{ textAlign: 'center' }}>
@@ -320,9 +392,8 @@ function AboutSection() {
 
 // ─── Skills ───────────────────────────────────────────────────
 function SkillSection() {
-  const homeSkills = skillsData
-    .filter((s) => s.showInHome)
-    .sort((a, b) => b.level - a.level);
+  const { getHomeData } = usePortfolio();
+  const { skills: topSkills } = getHomeData();
 
   return (
     <Box component="section" sx={{ backgroundColor: '#F8FAFF', py: { xs: 8, md: 12 } }}>
@@ -332,32 +403,31 @@ function SkillSection() {
           <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
             기술 스택
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 5 }}>주로 사용하는 기술 스택을 소개합니다.</Typography>
-          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {homeSkills.map((skill, i) => {
+          <Typography variant="body2" sx={{ color: '#64748B', mb: 5 }}>숙련도 기준 상위 스킬을 소개합니다.</Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {topSkills.map((skill, i) => {
               const meta = CATEGORY_META[skill.category] || { color: '#6366F1', bg: '#EEF2FF' };
               return (
-                <FadeIn key={skill.id} delay={i * 55}>
+                <FadeIn key={skill.id} delay={i * 70}>
                   <Box
                     sx={{
-                      display: 'flex', alignItems: 'center', gap: 1.4,
-                      px: 2.5, py: 1.3, borderRadius: '14px',
-                      background: meta.bg,
-                      border: `1.5px solid ${meta.color}25`,
+                      display: 'flex', alignItems: 'center', gap: 1.5,
+                      px: 3, py: 1.6, borderRadius: '16px',
+                      background: meta.bg, border: `1.5px solid ${meta.color}25`,
                       cursor: 'default',
                       transition: 'all 0.25s ease',
-                      '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 10px 24px ${meta.color}22`, border: `1.5px solid ${meta.color}55` },
+                      '&:hover': { transform: 'translateY(-5px)', boxShadow: `0 12px 28px ${meta.color}25`, border: `1.5px solid ${meta.color}60` },
                     }}
                   >
-                    <Typography sx={{ fontSize: 18, lineHeight: 1 }}>
+                    <Typography sx={{ fontSize: 22, lineHeight: 1 }}>
                       {ICON_EMOJI[skill.icon] || ICON_EMOJI.default}
                     </Typography>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.88rem', lineHeight: 1.2 }}>
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: meta.color, fontSize: '0.9rem', lineHeight: 1.2 }}>
                         {skill.name}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: `${meta.color}99`, fontSize: '0.65rem', fontWeight: 600 }}>
-                        {skill.level}%
+                      <Typography variant="caption" sx={{ color: `${meta.color}AA`, fontSize: '0.66rem', fontWeight: 600 }}>
+                        {skill.category}
                       </Typography>
                     </Box>
                   </Box>
