@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
+import { aboutMeData } from '../data/aboutMeData';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -235,48 +236,81 @@ function HeroSection() {
 
 // ─── About ────────────────────────────────────────────────────
 function AboutSection() {
+  const { basicInfo, sections } = aboutMeData;
+  const homeSections = sections.filter((s) => s.showInHome);
+
   return (
     <Box component="section" sx={{ backgroundColor: '#FFFFFF', py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="md" sx={{ textAlign: 'center' }}>
+      <Container maxWidth="md">
         <FadeIn>
-          <Box sx={sectionLabel}>About Me</Box>
-          <Typography variant="h3" sx={{ mb: 2, fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
-            자기소개
-          </Typography>
-          <Box
-            sx={{
-              textAlign: 'left',
-              pl: 3.5, py: 3, mb: 4,
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.04), rgba(139,92,246,0.03))',
-              borderLeft: '4px solid #6366F1',
-              borderRadius: '0 16px 16px 0',
-              border: '1px solid rgba(99,102,241,0.1)',
-              borderLeftWidth: '4px',
-            }}
-          >
-            <Typography variant="body1" sx={{ color: '#475569', lineHeight: 2 }}>
-              여기는 About Me 섹션입니다.
-              <br />
-              간단한 자기소개와 '더 알아보기' 버튼이 들어갈 예정입니다.
+          <Box sx={{ textAlign: 'center', mb: 5 }}>
+            <Box sx={sectionLabel}>About Me</Box>
+            <Typography variant="h3" sx={{ mb: 1, fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
+              자기소개
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#64748B' }}>
+              {basicInfo.name} · {basicInfo.position}
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            component={Link}
-            to="/about"
-            sx={{
-              background: G,
-              color: '#FFF',
-              fontWeight: 700,
-              px: 4.5, py: 1.3,
-              borderRadius: '14px',
-              boxShadow: '0 8px 24px rgba(99,102,241,0.3)',
-              '&:hover': { background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', transform: 'translateY(-2px)', boxShadow: '0 12px 32px rgba(99,102,241,0.4)' },
-              transition: 'all 0.25s ease',
-            }}
-          >
-            더 알아보기
-          </Button>
+        </FadeIn>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 5 }}>
+          {homeSections.map((section, i) => (
+            <FadeIn key={section.id} delay={i * 90}>
+              <Box
+                sx={{
+                  display: 'flex', gap: 2.5, alignItems: 'flex-start',
+                  background: 'rgba(255,255,255,0.75)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(99,102,241,0.1)',
+                  borderRadius: '20px',
+                  p: 3,
+                  boxShadow: '0 2px 14px rgba(99,102,241,0.06)',
+                  transition: 'all 0.25s ease',
+                  '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 10px 30px rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 44, height: 44, borderRadius: '13px', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22,
+                  }}
+                >
+                  {section.emoji}
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '0.93rem' }}>
+                    {section.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#64748B', lineHeight: 1.8, fontSize: '0.85rem' }}>
+                    {section.content}
+                  </Typography>
+                </Box>
+              </Box>
+            </FadeIn>
+          ))}
+        </Box>
+
+        <FadeIn delay={300}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant="contained"
+              component={Link}
+              to="/about"
+              sx={{
+                background: G, color: '#FFF', fontWeight: 700,
+                px: 4.5, py: 1.3, borderRadius: '14px',
+                boxShadow: '0 8px 24px rgba(99,102,241,0.3)',
+                '&:hover': { background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', transform: 'translateY(-2px)', boxShadow: '0 12px 32px rgba(99,102,241,0.4)' },
+                transition: 'all 0.25s ease',
+              }}
+            >
+              더 알아보기
+            </Button>
+          </Box>
         </FadeIn>
       </Container>
     </Box>
