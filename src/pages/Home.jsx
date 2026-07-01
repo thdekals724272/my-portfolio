@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
 import { aboutMeData } from '../data/aboutMeData';
+import { skillsData, ICON_EMOJI, CATEGORY_META } from '../data/skillsData';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -319,6 +320,10 @@ function AboutSection() {
 
 // ─── Skills ───────────────────────────────────────────────────
 function SkillSection() {
+  const homeSkills = skillsData
+    .filter((s) => s.showInHome)
+    .sort((a, b) => b.level - a.level);
+
   return (
     <Box component="section" sx={{ backgroundColor: '#F8FAFF', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md" sx={{ textAlign: 'center' }}>
@@ -328,28 +333,54 @@ function SkillSection() {
             기술 스택
           </Typography>
           <Typography variant="body2" sx={{ color: '#64748B', mb: 5 }}>주로 사용하는 기술 스택을 소개합니다.</Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {SKILLS.map((skill, i) => (
-              <FadeIn key={skill.name} delay={i * 55}>
-                <Box
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1.2,
-                    px: 2.5, py: 1.4, borderRadius: '14px',
-                    background: skill.bg,
-                    border: `1.5px solid ${skill.color}25`,
-                    cursor: 'default',
-                    transition: 'all 0.25s ease',
-                    '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 10px 24px ${skill.color}22`, border: `1.5px solid ${skill.color}55` },
-                  }}
-                >
-                  <Box sx={{ width: 9, height: 9, borderRadius: '50%', background: skill.color, boxShadow: `0 0 7px ${skill.color}70` }} />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: skill.color, fontSize: '0.88rem' }}>
-                    {skill.name}
-                  </Typography>
-                </Box>
-              </FadeIn>
-            ))}
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {homeSkills.map((skill, i) => {
+              const meta = CATEGORY_META[skill.category] || { color: '#6366F1', bg: '#EEF2FF' };
+              return (
+                <FadeIn key={skill.id} delay={i * 55}>
+                  <Box
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: 1.4,
+                      px: 2.5, py: 1.3, borderRadius: '14px',
+                      background: meta.bg,
+                      border: `1.5px solid ${meta.color}25`,
+                      cursor: 'default',
+                      transition: 'all 0.25s ease',
+                      '&:hover': { transform: 'translateY(-4px)', boxShadow: `0 10px 24px ${meta.color}22`, border: `1.5px solid ${meta.color}55` },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 18, lineHeight: 1 }}>
+                      {ICON_EMOJI[skill.icon] || ICON_EMOJI.default}
+                    </Typography>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.88rem', lineHeight: 1.2 }}>
+                        {skill.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: `${meta.color}99`, fontSize: '0.65rem', fontWeight: 600 }}>
+                        {skill.level}%
+                      </Typography>
+                    </Box>
+                  </Box>
+                </FadeIn>
+              );
+            })}
           </Box>
+        </FadeIn>
+
+        <FadeIn delay={400}>
+          <Button
+            variant="outlined"
+            component={Link}
+            to="/about"
+            sx={{
+              mt: 5, borderColor: 'rgba(99,102,241,0.3)', color: '#6366F1', fontWeight: 700,
+              px: 4, py: 1.1, borderRadius: '14px', fontSize: '0.88rem',
+              '&:hover': { background: 'rgba(99,102,241,0.06)', borderColor: '#6366F1', transform: 'translateY(-2px)' },
+              transition: 'all 0.25s ease',
+            }}
+          >
+            전체 스킬 보기
+          </Button>
         </FadeIn>
       </Container>
     </Box>

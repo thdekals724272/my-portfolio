@@ -1,17 +1,37 @@
-import { useState, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useInView } from '../hooks/useInView';
 import { aboutMeData } from '../data/aboutMeData';
+import {
+  skillsData,
+  ICON_EMOJI,
+  ICON_OPTIONS,
+  CATEGORIES,
+  CATEGORY_META,
+} from '../data/skillsData';
 
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Slider from '@mui/material/Slider';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
@@ -21,6 +41,8 @@ import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 import HomeIcon from '@mui/icons-material/Home';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EmailIcon from '@mui/icons-material/Email';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 
 // ─── Design Tokens ───────────────────────────────────────────
 const G = 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)';
@@ -37,23 +59,16 @@ const sectionLabel = {
   fontSize: '0.7rem', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
 };
 
+// ─── Helpers ─────────────────────────────────────────────────
 function FadeIn({ children, delay = 0 }) {
   const [ref, inView] = useInView();
   return (
-    <Box
-      ref={ref}
-      sx={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? 'translateY(0)' : 'translateY(24px)',
-        transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
-      }}
-    >
+    <Box ref={ref} sx={{ opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms` }}>
       {children}
     </Box>
   );
 }
 
-// ─── Info Row ─────────────────────────────────────────────────
 function InfoRow({ icon, label, value }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 1.2, borderBottom: '1px solid rgba(99,102,241,0.07)', '&:last-child': { borderBottom: 'none' } }}>
@@ -70,7 +85,7 @@ function InfoRow({ icon, label, value }) {
   );
 }
 
-// ─── Photo Upload ──────────────────────────────────────────────
+// ─── Photo Upload ─────────────────────────────────────────────
 function PhotoArea({ photo, onPhotoChange }) {
   const fileRef = useRef(null);
   return (
@@ -85,7 +100,7 @@ function PhotoArea({ photo, onPhotoChange }) {
         overflow: 'hidden',
         transition: 'transform 0.25s ease, box-shadow 0.25s ease',
         '&:hover': { transform: 'scale(1.04)', boxShadow: '0 16px 48px rgba(99,102,241,0.4)' },
-        '&:hover .overlay': { opacity: 1 },
+        '&:hover .photo-overlay': { opacity: 1 },
       }}
     >
       {photo ? (
@@ -95,29 +110,336 @@ function PhotoArea({ photo, onPhotoChange }) {
           👤
         </Box>
       )}
-      {/* Hover overlay */}
+      <Box className="photo-overlay" sx={{ position: 'absolute', inset: 0, background: 'rgba(99,102,241,0.65)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.22s ease', gap: 0.5 }}>
+        <CameraAltIcon sx={{ color: '#FFF', fontSize: 24 }} />
+        <Typography variant="caption" sx={{ color: '#FFF', fontWeight: 700, fontSize: '0.65rem' }}>사진 변경</Typography>
+      </Box>
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onPhotoChange} />
+    </Box>
+  );
+}
+
+// ─── Skill Card ───────────────────────────────────────────────
+function SkillCard({ skill }) {
+  const [ref, inView] = useInView();
+  const meta = CATEGORY_META[skill.category] || CATEGORY_META['Frontend'];
+
+  return (
+    <Tooltip
+      title={skill.description}
+      placement="top"
+      arrow
+      slotProps={{
+        tooltip: {
+          sx: {
+            background: 'rgba(15,23,42,0.92)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '10px',
+            fontSize: '0.78rem',
+            lineHeight: 1.65,
+            maxWidth: 210,
+            py: 1, px: 1.5,
+          },
+        },
+        arrow: { sx: { color: 'rgba(15,23,42,0.92)' } },
+      }}
+    >
       <Box
-        className="overlay"
+        ref={ref}
         sx={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(99,102,241,0.65)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          opacity: 0, transition: 'opacity 0.22s ease',
-          gap: 0.5,
+          ...GLASS,
+          borderRadius: '20px',
+          p: 2.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+          boxShadow: '0 2px 14px rgba(99,102,241,0.05)',
+          cursor: 'default',
+          transition: 'all 0.28s ease',
+          '&:hover': {
+            transform: 'translateY(-6px)',
+            boxShadow: `0 16px 40px ${meta.color}26`,
+            border: `1px solid ${meta.color}35`,
+          },
         }}
       >
-        <CameraAltIcon sx={{ color: '#FFF', fontSize: 24 }} />
-        <Typography variant="caption" sx={{ color: '#FFF', fontWeight: 700, fontSize: '0.65rem' }}>
-          사진 변경
-        </Typography>
+        {/* Icon + Category */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '13px', background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+            {ICON_EMOJI[skill.icon] || ICON_EMOJI.default}
+          </Box>
+          <Chip
+            label={skill.category}
+            size="small"
+            sx={{
+              height: 20, fontSize: '0.62rem', fontWeight: 700, borderRadius: '7px',
+              color: meta.color, background: meta.bg,
+              border: `1px solid ${meta.color}25`,
+              '& .MuiChip-label': { px: 1 },
+            }}
+          />
+        </Box>
+
+        {/* Name + Level */}
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.9rem' }}>
+              {skill.name}
+            </Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.8rem' }}>
+              {skill.level}%
+            </Typography>
+          </Box>
+
+          {/* Animated Progress Bar */}
+          <Box sx={{ height: 7, borderRadius: '999px', background: '#F1F5F9', overflow: 'hidden' }}>
+            <Box
+              sx={{
+                height: '100%',
+                width: inView ? `${skill.level}%` : '0%',
+                borderRadius: '999px',
+                background: `linear-gradient(90deg, ${meta.color}BB, ${meta.color})`,
+                transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.25s',
+              }}
+            />
+          </Box>
+        </Box>
       </Box>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={onPhotoChange}
-      />
+    </Tooltip>
+  );
+}
+
+// ─── Add Skill Dialog ─────────────────────────────────────────
+function AddSkillDialog({ open, onClose, onAdd }) {
+  const EMPTY = { name: '', category: 'Frontend', level: 50, icon: 'code', description: '', showInHome: false };
+  const [form, setForm] = useState(EMPTY);
+  const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
+
+  const handleAdd = () => {
+    if (!form.name.trim()) return;
+    onAdd({ ...form, id: Date.now(), name: form.name.trim() });
+    setForm(EMPTY);
+  };
+  const handleClose = () => { setForm(EMPTY); onClose(); };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', pb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        새 스킬 추가
+        <IconButton size="small" onClick={handleClose} sx={{ color: '#94A3B8' }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '12px !important' }}>
+        {/* Icon picker */}
+        <Box>
+          <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem', letterSpacing: 0.8, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+            아이콘
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+            {ICON_OPTIONS.map((opt) => (
+              <Box
+                key={opt.key}
+                onClick={() => set('icon', opt.key)}
+                title={opt.label}
+                sx={{
+                  width: 38, height: 38, borderRadius: '10px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20, cursor: 'pointer', userSelect: 'none',
+                  border: form.icon === opt.key ? '2px solid #6366F1' : '2px solid rgba(99,102,241,0.12)',
+                  background: form.icon === opt.key ? 'rgba(99,102,241,0.08)' : 'rgba(248,250,255,0.8)',
+                  transition: 'all 0.18s ease',
+                  '&:hover': { borderColor: '#6366F1', background: 'rgba(99,102,241,0.06)' },
+                }}
+              >
+                {ICON_EMOJI[opt.key]}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        <TextField
+          label="기술명 *"
+          size="small"
+          value={form.name}
+          onChange={(e) => set('name', e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+          inputProps={{ maxLength: 30 }}
+          fullWidth
+        />
+
+        <FormControl size="small" fullWidth>
+          <InputLabel>카테고리</InputLabel>
+          <Select label="카테고리" value={form.category} onChange={(e) => set('category', e.target.value)}>
+            {CATEGORIES.map((c) => (
+              <MenuItem key={c} value={c}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: CATEGORY_META[c]?.color || '#6366F1' }} />
+                  {c}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+              숙련도
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 800, fontSize: '0.85rem' }}>
+              {form.level}%
+            </Typography>
+          </Box>
+          <Slider
+            value={form.level}
+            onChange={(_, v) => set('level', v)}
+            min={0} max={100} step={5}
+            sx={{ color: '#6366F1', '& .MuiSlider-thumb': { width: 16, height: 16 } }}
+          />
+        </Box>
+
+        <TextField
+          label="한 줄 설명 (툴팁에 표시)"
+          size="small"
+          value={form.description}
+          onChange={(e) => set('description', e.target.value)}
+          inputProps={{ maxLength: 80 }}
+          fullWidth
+        />
+
+        <FormControlLabel
+          control={<Switch checked={form.showInHome} onChange={(e) => set('showInHome', e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#6366F1' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { background: '#6366F1' } }} />}
+          label={<Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>홈 탭에 표시</Typography>}
+        />
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+        <Button onClick={handleClose} sx={{ color: '#64748B', borderRadius: '10px' }}>취소</Button>
+        <Button
+          variant="contained"
+          onClick={handleAdd}
+          disabled={!form.name.trim()}
+          sx={{ background: G, borderRadius: '10px', fontWeight: 700, px: 3, boxShadow: '0 4px 14px rgba(99,102,241,0.3)', '&:hover': { background: 'linear-gradient(135deg,#4F46E5,#7C3AED)' }, '&:disabled': { background: '#E2E8F0', color: '#94A3B8' } }}
+        >
+          추가하기
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ─── Skills Section ───────────────────────────────────────────
+function SkillsSection() {
+  const [skills, setSkills] = useState(skillsData);
+  const [activeCategory, setActiveCategory] = useState('전체');
+  const [addOpen, setAddOpen] = useState(false);
+
+  const categories = useMemo(() => {
+    const cats = [...new Set(skills.map((s) => s.category))];
+    return ['전체', ...cats];
+  }, [skills]);
+
+  const filtered = useMemo(() => {
+    const list = activeCategory === '전체' ? skills : skills.filter((s) => s.category === activeCategory);
+    return [...list].sort((a, b) => b.level - a.level);
+  }, [skills, activeCategory]);
+
+  const handleAdd = (newSkill) => {
+    setSkills((prev) => [...prev, newSkill]);
+    setAddOpen(false);
+  };
+
+  return (
+    <Box component="section" sx={{ background: '#F8FAFF', py: { xs: 7, md: 11 } }}>
+      <Container maxWidth="lg">
+        <FadeIn>
+          <Box sx={{ textAlign: 'center', mb: 5 }}>
+            <Box sx={sectionLabel}>Skills</Box>
+            <Typography variant="h3" sx={{ fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em', mb: 1 }}>
+              기술 스택
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#64748B' }}>
+              카드에 마우스를 올리면 설명을 확인할 수 있어요.
+            </Typography>
+          </Box>
+        </FadeIn>
+
+        {/* Category Filter */}
+        <FadeIn delay={80}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 5 }}>
+            {categories.map((cat) => {
+              const meta = CATEGORY_META[cat];
+              const active = activeCategory === cat;
+              return (
+                <Box
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  sx={{
+                    px: 2.5, py: 0.8, borderRadius: '999px', cursor: 'pointer', userSelect: 'none',
+                    fontSize: '0.82rem', fontWeight: active ? 700 : 500,
+                    border: active
+                      ? `1.5px solid ${meta?.color || '#6366F1'}`
+                      : '1.5px solid rgba(99,102,241,0.15)',
+                    background: active
+                      ? (meta?.bg || 'rgba(99,102,241,0.1)')
+                      : 'rgba(255,255,255,0.7)',
+                    color: active ? (meta?.color || '#6366F1') : '#64748B',
+                    backdropFilter: 'blur(8px)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderColor: meta?.color || '#6366F1',
+                      color: meta?.color || '#6366F1',
+                      background: meta?.bg || 'rgba(99,102,241,0.06)',
+                    },
+                  }}
+                >
+                  {cat}
+                </Box>
+              );
+            })}
+          </Box>
+        </FadeIn>
+
+        {/* Skill Grid */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2.5,
+            mb: 5,
+          }}
+        >
+          {filtered.map((skill, i) => (
+            <FadeIn key={skill.id} delay={i * 60}>
+              <SkillCard skill={skill} />
+            </FadeIn>
+          ))}
+        </Box>
+
+        {/* Add Button */}
+        <FadeIn delay={200}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => setAddOpen(true)}
+              sx={{
+                borderColor: 'rgba(99,102,241,0.3)', color: '#6366F1', fontWeight: 700,
+                px: 4, py: 1.1, borderRadius: '14px', fontSize: '0.88rem',
+                background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
+                '&:hover': { background: 'rgba(99,102,241,0.06)', borderColor: '#6366F1', transform: 'translateY(-2px)' },
+                transition: 'all 0.25s ease',
+              }}
+            >
+              스킬 추가
+            </Button>
+          </Box>
+        </FadeIn>
+      </Container>
+
+      <AddSkillDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAdd} />
     </Box>
   );
 }
@@ -138,23 +460,19 @@ function AboutMe() {
     reader.readAsDataURL(file);
   };
 
-  const handleAccordion = (id) => (_, isExpanded) => {
-    setExpanded(isExpanded ? id : false);
-  };
+  const handleAccordion = (id) => (_, isExpanded) => setExpanded(isExpanded ? id : false);
 
   return (
     <Box component="main" sx={{ background: '#F8FAFF', minHeight: 'calc(100vh - 64px)' }}>
 
-      {/* ── Hero / Profile Card ── */}
+      {/* ── Hero / Profile ── */}
       <Box
         sx={{
           position: 'relative',
           background: 'linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 55%, #F3E8FF 100%)',
-          py: { xs: 8, md: 12 },
-          overflow: 'hidden',
+          py: { xs: 8, md: 12 }, overflow: 'hidden',
         }}
       >
-        {/* Background orbs */}
         {[
           { size: 480, color: 'rgba(99,102,241,0.13)', top: -160, right: -70 },
           { size: 320, color: 'rgba(139,92,246,0.09)', bottom: -60, left: -50 },
@@ -163,27 +481,15 @@ function AboutMe() {
         ))}
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              gap: { xs: 4, md: 6 },
-              alignItems: { xs: 'center', md: 'flex-start' },
-            }}
-          >
-            {/* Left — Photo + Name */}
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 4, md: 6 }, alignItems: { xs: 'center', md: 'flex-start' } }}>
+
+            {/* Left — Photo */}
             <Box sx={{ textAlign: 'center', flexShrink: 0, minWidth: 200 }}>
               <PhotoArea photo={photo} onPhotoChange={handlePhotoChange} />
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.7, letterSpacing: '-0.02em' }}>
                 {basicInfo.name}
               </Typography>
-              <Box
-                sx={{
-                  display: 'inline-block', px: 2.5, py: 0.7, borderRadius: '999px',
-                  background: G, color: '#FFF', fontSize: '0.78rem', fontWeight: 700,
-                  boxShadow: '0 4px 16px rgba(99,102,241,0.3)', mb: 2.5,
-                }}
-              >
+              <Box sx={{ display: 'inline-block', px: 2.5, py: 0.7, borderRadius: '999px', background: G, color: '#FFF', fontSize: '0.78rem', fontWeight: 700, boxShadow: '0 4px 16px rgba(99,102,241,0.3)', mb: 2.5 }}>
                 {basicInfo.position}
               </Box>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
@@ -204,19 +510,9 @@ function AboutMe() {
                 <InfoRow icon={<BuildIcon sx={{ fontSize: 18 }} />} label="작업 방식" value={basicInfo.workflow} />
                 <InfoRow icon={<WorkHistoryIcon sx={{ fontSize: 18 }} />} label="경력" value={basicInfo.experience} />
               </Box>
-
-              {/* Tags */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
                 {['React', 'Supabase', 'MUI', 'Vite', 'GitHub', 'Claude AI'].map((tag) => (
-                  <Box
-                    key={tag}
-                    sx={{
-                      px: 2, py: 0.55, borderRadius: '999px', fontSize: '0.76rem', fontWeight: 600,
-                      background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(99,102,241,0.15)', color: '#64748B',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                    }}
-                  >
+                  <Box key={tag} sx={{ px: 2, py: 0.55, borderRadius: '999px', fontSize: '0.76rem', fontWeight: 600, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(99,102,241,0.15)', color: '#64748B', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                     {tag}
                   </Box>
                 ))}
@@ -226,7 +522,7 @@ function AboutMe() {
         </Container>
       </Box>
 
-      {/* ── Story Sections (Accordion) ── */}
+      {/* ── Story Sections ── */}
       <Box sx={{ backgroundColor: '#FFFFFF', py: { xs: 7, md: 11 } }}>
         <Container maxWidth="md">
           <FadeIn>
@@ -235,9 +531,7 @@ function AboutMe() {
               <Typography variant="h3" sx={{ fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em' }}>
                 나의 이야기
               </Typography>
-              <Typography variant="body2" sx={{ color: '#64748B', mt: 1.5 }}>
-                항목을 클릭해서 내용을 확인하세요.
-              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748B', mt: 1.5 }}>항목을 클릭해서 내용을 확인하세요.</Typography>
             </Box>
           </FadeIn>
 
@@ -247,94 +541,39 @@ function AboutMe() {
                 <Accordion
                   expanded={expanded === section.id}
                   onChange={handleAccordion(section.id)}
-                  disableGutters
-                  elevation={0}
+                  disableGutters elevation={0}
                   sx={{
-                    ...GLASS,
-                    borderRadius: '18px !important',
-                    boxShadow: expanded === section.id
-                      ? '0 8px 32px rgba(99,102,241,0.13)'
-                      : '0 2px 12px rgba(99,102,241,0.05)',
+                    ...GLASS, borderRadius: '18px !important',
+                    boxShadow: expanded === section.id ? '0 8px 32px rgba(99,102,241,0.13)' : '0 2px 12px rgba(99,102,241,0.05)',
                     transition: 'box-shadow 0.3s ease',
-                    '&:before': { display: 'none' },
-                    overflow: 'hidden',
-                    border: expanded === section.id
-                      ? '1px solid rgba(99,102,241,0.25) !important'
-                      : '1px solid rgba(255,255,255,0.65) !important',
+                    '&:before': { display: 'none' }, overflow: 'hidden',
+                    border: expanded === section.id ? '1px solid rgba(99,102,241,0.25) !important' : '1px solid rgba(255,255,255,0.65) !important',
                   }}
                 >
                   <AccordionSummary
-                    expandIcon={
-                      <ExpandMoreIcon
-                        sx={{
-                          color: expanded === section.id ? '#6366F1' : '#94A3B8',
-                          transition: 'color 0.2s ease',
-                        }}
-                      />
-                    }
-                    sx={{
-                      px: 3, py: 0.5,
-                      '& .MuiAccordionSummary-content': { my: 1.8 },
-                      '&:hover': { background: 'rgba(99,102,241,0.03)' },
-                    }}
+                    expandIcon={<ExpandMoreIcon sx={{ color: expanded === section.id ? '#6366F1' : '#94A3B8', transition: 'color 0.2s ease' }} />}
+                    sx={{ px: 3, py: 0.5, '& .MuiAccordionSummary-content': { my: 1.8 }, '&:hover': { background: 'rgba(99,102,241,0.03)' } }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
-                      <Box
-                        sx={{
-                          width: 42, height: 42, borderRadius: '13px', flexShrink: 0,
-                          background: expanded === section.id
-                            ? G
-                            : 'linear-gradient(135deg, #EEF2FF, #F3E8FF)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 20,
-                          boxShadow: expanded === section.id ? '0 4px 14px rgba(99,102,241,0.3)' : 'none',
-                          transition: 'all 0.25s ease',
-                        }}
-                      >
+                      <Box sx={{ width: 42, height: 42, borderRadius: '13px', flexShrink: 0, background: expanded === section.id ? G : 'linear-gradient(135deg, #EEF2FF, #F3E8FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, boxShadow: expanded === section.id ? '0 4px 14px rgba(99,102,241,0.3)' : 'none', transition: 'all 0.25s ease' }}>
                         {section.emoji}
                       </Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{
-                            fontWeight: 700, fontSize: '0.95rem', color: '#0F172A',
-                            letterSpacing: '-0.01em', lineHeight: 1.3,
-                          }}
-                        >
-                          {section.title}
-                        </Typography>
-                      </Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#0F172A', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                        {section.title}
+                      </Typography>
                       {section.showInHome && (
                         <Chip
                           icon={<HomeIcon sx={{ fontSize: '0.75rem !important', color: '#6366F1 !important' }} />}
                           label="홈 노출"
                           size="small"
-                          sx={{
-                            height: 22, fontSize: '0.65rem', fontWeight: 700,
-                            background: 'rgba(99,102,241,0.08)',
-                            color: '#6366F1',
-                            border: '1px solid rgba(99,102,241,0.2)',
-                            borderRadius: '8px',
-                            flexShrink: 0,
-                            '& .MuiChip-label': { px: 1 },
-                          }}
+                          sx={{ height: 22, fontSize: '0.65rem', fontWeight: 700, background: 'rgba(99,102,241,0.08)', color: '#6366F1', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px', flexShrink: 0, ml: 'auto', '& .MuiChip-label': { px: 1 } }}
                         />
                       )}
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails sx={{ px: 3, pb: 3, pt: 0 }}>
-                    <Box
-                      sx={{
-                        pl: 7,
-                        borderLeft: '3px solid',
-                        borderImage: `${G} 1`,
-                        borderRadius: '0 0 0 4px',
-                      }}
-                    >
-                      <Typography
-                        variant="body1"
-                        sx={{ color: '#475569', lineHeight: 2, fontSize: '0.93rem' }}
-                      >
+                    <Box sx={{ pl: 7, borderLeft: '3px solid #6366F1', borderRadius: '0 0 0 4px' }}>
+                      <Typography variant="body1" sx={{ color: '#475569', lineHeight: 2, fontSize: '0.93rem' }}>
                         {section.content}
                       </Typography>
                     </Box>
@@ -346,16 +585,11 @@ function AboutMe() {
         </Container>
       </Box>
 
+      {/* ── Skills ── */}
+      <SkillsSection />
+
       {/* ── CTA ── */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #EEF2FF 0%, #F3E8FF 100%)',
-          py: { xs: 8, md: 11 },
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
+      <Box sx={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #F3E8FF 100%)', py: { xs: 8, md: 11 }, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', width: 360, height: 360, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
         <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
           <FadeIn>
@@ -371,12 +605,7 @@ function AboutMe() {
                 size="large"
                 component={Link}
                 to="/"
-                sx={{
-                  background: G, fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4,
-                  boxShadow: '0 8px 24px rgba(99,102,241,0.3)',
-                  '&:hover': { background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', transform: 'translateY(-2px)', boxShadow: '0 12px 32px rgba(99,102,241,0.4)' },
-                  transition: 'all 0.25s ease',
-                }}
+                sx={{ background: G, fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4, boxShadow: '0 8px 24px rgba(99,102,241,0.3)', '&:hover': { background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', transform: 'translateY(-2px)', boxShadow: '0 12px 32px rgba(99,102,241,0.4)' }, transition: 'all 0.25s ease' }}
               >
                 연락하기
               </Button>
@@ -385,13 +614,7 @@ function AboutMe() {
                 size="large"
                 component={Link}
                 to="/projects"
-                sx={{
-                  borderColor: 'rgba(99,102,241,0.3)', color: '#6366F1', fontWeight: 700,
-                  borderRadius: '14px', px: 4, py: 1.4,
-                  background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
-                  '&:hover': { background: 'rgba(99,102,241,0.06)', borderColor: '#6366F1', transform: 'translateY(-2px)' },
-                  transition: 'all 0.25s ease',
-                }}
+                sx={{ borderColor: 'rgba(99,102,241,0.3)', color: '#6366F1', fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', '&:hover': { background: 'rgba(99,102,241,0.06)', borderColor: '#6366F1', transform: 'translateY(-2px)' }, transition: 'all 0.25s ease' }}
               >
                 Projects 보기
               </Button>
