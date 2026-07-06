@@ -93,6 +93,7 @@ function ProjectCard({ project, index }) {
                 component="img"
                 src={project.thumbnail_url}
                 alt={project.title}
+                loading="lazy"
                 onLoad={() => setImgLoaded(true)}
                 onError={() => setImgError(true)}
                 sx={{

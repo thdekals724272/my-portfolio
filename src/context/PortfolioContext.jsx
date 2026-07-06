@@ -1,6 +1,7 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react';
 
 const PortfolioContext = createContext(null);
+const STORAGE_KEY = 'portfolio-about-me-data';
 
 const INITIAL_DATA = {
   basicInfo: {
@@ -55,48 +56,95 @@ const INITIAL_DATA = {
   ],
 };
 
+const loadInitialData = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return INITIAL_DATA;
+    const parsed = JSON.parse(saved);
+    return {
+      basicInfo: { ...INITIAL_DATA.basicInfo, ...parsed.basicInfo },
+      sections: Array.isArray(parsed.sections) ? parsed.sections : INITIAL_DATA.sections,
+      skills: Array.isArray(parsed.skills) ? parsed.skills : INITIAL_DATA.skills,
+    };
+  } catch {
+    return INITIAL_DATA;
+  }
+};
+
 export const PortfolioProvider = ({ children }) => {
-  const [aboutMeData, setAboutMeData] = useState(INITIAL_DATA);
+  const [aboutMeData, setAboutMeData] = useState(loadInitialData);
 
-  const updateBasicInfo = (changes) =>
-    setAboutMeData((prev) => ({ ...prev, basicInfo: { ...prev.basicInfo, ...changes } }));
+  // ── Persist to localStorage so edits survive reloads/새 탭 ──
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(aboutMeData));
+    } catch {
+      // 저장 공간 초과 등은 조용히 무시 (편집 자체는 세션 내에서 계속 동작)
+    }
+  }, [aboutMeData]);
 
-  const updateSection = (id, changes) =>
-    setAboutMeData((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) => (s.id === id ? { ...s, ...changes } : s)),
-    }));
+  // ── Stable updaters (useCallback prevents child re-renders) ──
+  const updateBasicInfo = useCallback(
+    (changes) =>
+      setAboutMeData((prev) => ({ ...prev, basicInfo: { ...prev.basicInfo, ...changes } })),
+    []
+  );
 
-  const updateSkill = (skillId, changes) =>
-    setAboutMeData((prev) => ({
-      ...prev,
-      skills: prev.skills.map((s) => (s.id === skillId ? { ...s, ...changes } : s)),
-    }));
+  const updateSection = useCallback(
+    (id, changes) =>
+      setAboutMeData((prev) => ({
+        ...prev,
+        sections: prev.sections.map((s) => (s.id === id ? { ...s, ...changes } : s)),
+      })),
+    []
+  );
 
-  const addSkill = (newSkill) =>
-    setAboutMeData((prev) => ({ ...prev, skills: [...prev.skills, newSkill] }));
+  const updateSkill = useCallback(
+    (skillId, changes) =>
+      setAboutMeData((prev) => ({
+        ...prev,
+        skills: prev.skills.map((s) => (s.id === skillId ? { ...s, ...changes } : s)),
+      })),
+    []
+  );
 
-  const getHomeData = () => {
-    const content = aboutMeData.sections
-      .filter((s) => s.showInHome)
-      .map((s) => ({
-        id: s.id,
-        title: s.title,
-        emoji: s.emoji,
-        summary: s.content.length > 100 ? s.content.substring(0, 100) + '...' : s.content,
-      }));
+  const addSkill = useCallback(
+    (newSkill) =>
+      setAboutMeData((prev) => ({ ...prev, skills: [...prev.skills, newSkill] })),
+    []
+  );
 
-    const skills = [...aboutMeData.skills]
-      .filter((s) => s.showInHome)
-      .sort((a, b) => b.level - a.level)
-      .slice(0, 4);
-
-    return { content, skills, basicInfo: aboutMeData.basicInfo };
-  };
+  // ── Pre-computed home data (useMemo avoids repeated sort/filter) ──
+  const homeData = useMemo(
+    () => ({
+      content: aboutMeData.sections
+        .filter((s) => s.showInHome)
+        .map((s) => ({
+          id: s.id,
+          title: s.title,
+          emoji: s.emoji,
+          summary:
+            s.content.length > 100 ? s.content.substring(0, 100) + '...' : s.content,
+        })),
+      skills: [...aboutMeData.skills]
+        .filter((s) => s.showInHome)
+        .sort((a, b) => b.level - a.level)
+        .slice(0, 4),
+      basicInfo: aboutMeData.basicInfo,
+    }),
+    [aboutMeData]
+  );
 
   return (
     <PortfolioContext.Provider
-      value={{ aboutMeData, setAboutMeData, updateBasicInfo, updateSection, updateSkill, addSkill, getHomeData }}
+      value={{
+        aboutMeData,
+        homeData,
+        updateBasicInfo,
+        updateSection,
+        updateSkill,
+        addSkill,
+      }}
     >
       {children}
     </PortfolioContext.Provider>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInView } from '../hooks/useInView';
 import { usePortfolio } from '../context/PortfolioContext';
@@ -26,6 +26,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slider from '@mui/material/Slider';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
@@ -87,6 +89,10 @@ function PhotoArea({ photo, onPhotoChange }) {
   return (
     <Box
       onClick={() => fileRef.current?.click()}
+      role="button"
+      tabIndex={0}
+      aria-label="프로필 사진 변경"
+      onKeyDown={(e) => e.key === 'Enter' && fileRef.current?.click()}
       sx={{
         width: 120, height: 120, borderRadius: '50%', mx: 'auto', mb: 2.5,
         position: 'relative', cursor: 'pointer',
@@ -150,7 +156,7 @@ function BasicInfoDialog({ open, onClose, info, onSave }) {
 }
 
 // ─── Skill Card ───────────────────────────────────────────────
-function SkillCard({ skill, onEdit }) {
+const SkillCard = memo(function SkillCard({ skill, onEdit }) {
   const [ref, inView] = useInView();
   const meta = CATEGORY_META[skill.category] || CATEGORY_META['Frontend'];
 
@@ -173,19 +179,22 @@ function SkillCard({ skill, onEdit }) {
           cursor: 'default', position: 'relative',
           transition: 'all 0.28s ease',
           '&:hover': { transform: 'translateY(-6px)', boxShadow: `0 16px 40px ${meta.color}26`, border: `1px solid ${meta.color}35` },
-          '&:hover .skill-edit-btn': { opacity: 1 },
+          '&:hover .skill-edit-btn, &:focus-within .skill-edit-btn': { opacity: 1 },
         }}
       >
-        {/* Edit button (hover) */}
+        {/* Edit button — hover(데스크톱)/focus(키보드)로 표시, 터치 기기에서는 항상 표시 */}
         <IconButton
           className="skill-edit-btn"
           size="small"
           onClick={() => onEdit(skill)}
+          aria-label={`${skill.name} 스킬 수정`}
           sx={{
             position: 'absolute', top: 10, right: 10,
             opacity: 0, transition: 'opacity 0.2s ease',
             color: '#6366F1', background: 'rgba(99,102,241,0.08)',
             '&:hover': { background: 'rgba(99,102,241,0.15)' },
+            '&:focus-visible': { opacity: 1 },
+            '@media (hover: none)': { opacity: 1 },
             width: 28, height: 28,
           }}
         >
@@ -214,15 +223,12 @@ function SkillCard({ skill, onEdit }) {
       </Box>
     </Tooltip>
   );
-}
+});
 
 // ─── Skill Edit Dialog ────────────────────────────────────────
 function SkillEditDialog({ open, skill, onClose, onSave }) {
   const [form, setForm] = useState(skill || {});
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-
-  // sync when skill changes
-  useMemo(() => { if (skill) setForm({ ...skill }); }, [skill]);
 
   if (!skill) return null;
 
@@ -257,7 +263,7 @@ function SkillEditDialog({ open, skill, onClose, onSave }) {
         <TextField
           label="한 줄 설명 (툴팁)" size="small" fullWidth
           value={form.description || ''} onChange={(e) => set('description', e.target.value)}
-          inputProps={{ maxLength: 80 }}
+          slotProps={{ htmlInput: { maxLength: 80 } }}
         />
 
         <FormControlLabel
@@ -314,14 +320,22 @@ function AddSkillDialog({ open, onClose, onAdd }) {
           <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem', letterSpacing: 0.8, textTransform: 'uppercase', display: 'block', mb: 1 }}>아이콘</Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
             {ICON_OPTIONS.map((opt) => (
-              <Box key={opt.key} onClick={() => set('icon', opt.key)} title={opt.label}
-                sx={{ width: 38, height: 38, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, cursor: 'pointer', userSelect: 'none', border: form.icon === opt.key ? '2px solid #6366F1' : '2px solid rgba(99,102,241,0.12)', background: form.icon === opt.key ? 'rgba(99,102,241,0.08)' : 'rgba(248,250,255,0.8)', transition: 'all 0.18s ease', '&:hover': { borderColor: '#6366F1', background: 'rgba(99,102,241,0.06)' } }}>
+              <Box
+                key={opt.key}
+                role="button"
+                tabIndex={0}
+                aria-label={opt.label}
+                aria-pressed={form.icon === opt.key}
+                onClick={() => set('icon', opt.key)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set('icon', opt.key); } }}
+                title={opt.label}
+                sx={{ width: 38, height: 38, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, cursor: 'pointer', userSelect: 'none', border: form.icon === opt.key ? '2px solid #6366F1' : '2px solid rgba(99,102,241,0.12)', background: form.icon === opt.key ? 'rgba(99,102,241,0.08)' : 'rgba(248,250,255,0.8)', transition: 'all 0.18s ease', '&:hover': { borderColor: '#6366F1', background: 'rgba(99,102,241,0.06)' }, '&:focus-visible': { outline: '2px solid #6366F1', outlineOffset: 2 } }}>
                 {ICON_EMOJI[opt.key]}
               </Box>
             ))}
           </Box>
         </Box>
-        <TextField label="기술명 *" size="small" value={form.name} onChange={(e) => set('name', e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAdd()} inputProps={{ maxLength: 30 }} fullWidth />
+        <TextField label="기술명 *" size="small" value={form.name} onChange={(e) => set('name', e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAdd()} slotProps={{ htmlInput: { maxLength: 30 } }} fullWidth />
         <FormControl size="small" fullWidth>
           <InputLabel>카테고리</InputLabel>
           <Select label="카테고리" value={form.category} onChange={(e) => set('category', e.target.value)}>
@@ -342,7 +356,7 @@ function AddSkillDialog({ open, onClose, onAdd }) {
           </Box>
           <Slider value={form.level} onChange={(_, v) => set('level', v)} min={0} max={100} step={5} sx={{ color: '#6366F1', '& .MuiSlider-thumb': { width: 16, height: 16 } }} />
         </Box>
-        <TextField label="한 줄 설명 (툴팁)" size="small" value={form.description} onChange={(e) => set('description', e.target.value)} inputProps={{ maxLength: 80 }} fullWidth />
+        <TextField label="한 줄 설명 (툴팁)" size="small" value={form.description} onChange={(e) => set('description', e.target.value)} slotProps={{ htmlInput: { maxLength: 80 } }} fullWidth />
         <FormControlLabel
           control={<Switch checked={form.showInHome} onChange={(e) => set('showInHome', e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#6366F1' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { background: '#6366F1' } }} />}
           label={<Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>홈 탭에 표시</Typography>}
@@ -359,13 +373,18 @@ function AddSkillDialog({ open, onClose, onAdd }) {
 }
 
 // ─── Skills Section ───────────────────────────────────────────
-function SkillsSection() {
+function SkillsSection({ onSaved }) {
   const { aboutMeData, updateSkill, addSkill } = usePortfolio();
   const skills = aboutMeData.skills;
 
   const [activeCategory, setActiveCategory] = useState('전체');
   const [addOpen, setAddOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState(null);
+
+  const handleEditSkill = useCallback((skill) => setEditingSkill(skill), []);
+  const handleCloseEdit = useCallback(() => setEditingSkill(null), []);
+  const handleSaveEdit = useCallback((id, changes) => { updateSkill(id, changes); setEditingSkill(null); onSaved?.('스킬 정보가 저장되었습니다.'); }, [updateSkill, onSaved]);
+  const handleAddSkill = useCallback((newSkill) => { addSkill(newSkill); setAddOpen(false); onSaved?.(`'${newSkill.name}' 스킬이 추가되었습니다.`); }, [addSkill, onSaved]);
 
   const categories = useMemo(() => {
     const cats = [...new Set(skills.map((s) => s.category))];
@@ -384,7 +403,7 @@ function SkillsSection() {
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={sectionLabel}>Skills</Box>
             <Typography variant="h3" sx={{ fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em', mb: 1 }}>기술 스택</Typography>
-            <Typography variant="body2" sx={{ color: '#64748B' }}>카드에 마우스를 올리면 설명과 수정 버튼을 볼 수 있어요.</Typography>
+            <Typography variant="body2" sx={{ color: '#64748B' }}>카드에 마우스를 올리거나 포커스하면 설명과 수정 버튼을 볼 수 있어요.</Typography>
           </Box>
         </FadeIn>
 
@@ -395,8 +414,14 @@ function SkillsSection() {
               const meta = CATEGORY_META[cat];
               const active = activeCategory === cat;
               return (
-                <Box key={cat} onClick={() => setActiveCategory(cat)}
-                  sx={{ px: 2.5, py: 0.8, borderRadius: '999px', cursor: 'pointer', userSelect: 'none', fontSize: '0.82rem', fontWeight: active ? 700 : 500, border: active ? `1.5px solid ${meta?.color || '#6366F1'}` : '1.5px solid rgba(99,102,241,0.15)', background: active ? (meta?.bg || 'rgba(99,102,241,0.1)') : 'rgba(255,255,255,0.7)', color: active ? (meta?.color || '#6366F1') : '#64748B', backdropFilter: 'blur(8px)', transition: 'all 0.2s ease', '&:hover': { borderColor: meta?.color || '#6366F1', color: meta?.color || '#6366F1', background: meta?.bg || 'rgba(99,102,241,0.06)' } }}>
+                <Box
+                  key={cat}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={active}
+                  onClick={() => setActiveCategory(cat)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveCategory(cat); } }}
+                  sx={{ px: 2.5, py: 0.8, borderRadius: '999px', cursor: 'pointer', userSelect: 'none', fontSize: '0.82rem', fontWeight: active ? 700 : 500, border: active ? `1.5px solid ${meta?.color || '#6366F1'}` : '1.5px solid rgba(99,102,241,0.15)', background: active ? (meta?.bg || 'rgba(99,102,241,0.1)') : 'rgba(255,255,255,0.7)', color: active ? (meta?.color || '#6366F1') : '#64748B', backdropFilter: 'blur(8px)', transition: 'all 0.2s ease', '&:hover': { borderColor: meta?.color || '#6366F1', color: meta?.color || '#6366F1', background: meta?.bg || 'rgba(99,102,241,0.06)' }, '&:focus-visible': { outline: '2px solid #6366F1', outlineOffset: 2 } }}>
                   {cat}
                 </Box>
               );
@@ -408,7 +433,7 @@ function SkillsSection() {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, mb: 5 }}>
           {filtered.map((skill, i) => (
             <FadeIn key={skill.id} delay={i * 60}>
-              <SkillCard skill={skill} onEdit={setEditingSkill} />
+              <SkillCard skill={skill} onEdit={handleEditSkill} />
             </FadeIn>
           ))}
         </Box>
@@ -425,12 +450,13 @@ function SkillsSection() {
       </Container>
 
       <SkillEditDialog
+        key={editingSkill?.id ?? 'none'}
         open={!!editingSkill}
         skill={editingSkill}
-        onClose={() => setEditingSkill(null)}
-        onSave={(id, changes) => { updateSkill(id, changes); setEditingSkill(null); }}
+        onClose={handleCloseEdit}
+        onSave={handleSaveEdit}
       />
-      <AddSkillDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={(newSkill) => { addSkill(newSkill); setAddOpen(false); }} />
+      <AddSkillDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddSkill} />
     </Box>
   );
 }
@@ -445,24 +471,45 @@ function AboutMe() {
   // per-section content editing
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
-  const handlePhotoChange = (e) => {
+  const showToast = useCallback((message, severity = 'success') => {
+    setToast({ open: true, message, severity });
+  }, []);
+  const closeToast = useCallback(() => setToast((t) => ({ ...t, open: false })), []);
+
+  const MAX_PHOTO_MB = 3;
+  const handlePhotoChange = useCallback((e) => {
     const file = e.target.files[0];
+    e.target.value = ''; // 같은 파일 재선택 시에도 change가 발생하도록 초기화
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('이미지 파일만 업로드할 수 있어요.', 'error');
+      return;
+    }
+    if (file.size > MAX_PHOTO_MB * 1024 * 1024) {
+      showToast(`이미지 용량은 ${MAX_PHOTO_MB}MB 이하만 가능해요.`, 'error');
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = (ev) => updateBasicInfo({ photo: ev.target.result });
+    reader.onload = (ev) => {
+      updateBasicInfo({ photo: ev.target.result });
+      showToast('프로필 사진이 변경되었습니다.');
+    };
+    reader.onerror = () => showToast('사진을 불러오는 중 오류가 발생했어요. 다시 시도해주세요.', 'error');
     reader.readAsDataURL(file);
-  };
+  }, [updateBasicInfo, showToast]);
 
-  const startContentEdit = (section) => {
+  const startContentEdit = useCallback((section) => {
     setEditingSectionId(section.id);
     setEditingContent(section.content);
-  };
+  }, []);
 
-  const saveContentEdit = (id) => {
+  const saveContentEdit = useCallback((id) => {
     updateSection(id, { content: editingContent });
     setEditingSectionId(null);
-  };
+    showToast('내용이 저장되었습니다.');
+  }, [updateSection, editingContent, showToast]);
 
   return (
     <Box component="main" sx={{ background: '#F8FAFF', minHeight: 'calc(100vh - 64px)' }}>
@@ -487,10 +534,10 @@ function AboutMe() {
                 {basicInfo.position}
               </Box>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                <IconButton href="mailto:thdekals724272@gmail.com" size="small" sx={{ color: '#6366F1', background: 'rgba(99,102,241,0.08)', '&:hover': { background: 'rgba(99,102,241,0.15)' }, borderRadius: '10px' }}>
+                <IconButton href="mailto:thdekals724272@gmail.com" aria-label="이메일 보내기" size="small" sx={{ color: '#6366F1', background: 'rgba(99,102,241,0.08)', '&:hover': { background: 'rgba(99,102,241,0.15)' }, borderRadius: '10px' }}>
                   <EmailIcon fontSize="small" />
                 </IconButton>
-                <IconButton href="https://github.com/thdekals724272" target="_blank" rel="noopener noreferrer" size="small" sx={{ color: '#0F172A', background: 'rgba(15,23,42,0.06)', '&:hover': { background: 'rgba(15,23,42,0.12)' }, borderRadius: '10px' }}>
+                <IconButton href="https://github.com/thdekals724272" target="_blank" rel="noopener noreferrer" aria-label="GitHub 프로필 보기" size="small" sx={{ color: '#0F172A', background: 'rgba(15,23,42,0.06)', '&:hover': { background: 'rgba(15,23,42,0.12)' }, borderRadius: '10px' }}>
                   <GitHubIcon fontSize="small" />
                 </IconButton>
               </Box>
@@ -502,7 +549,7 @@ function AboutMe() {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                   <Box sx={sectionLabel}>기본 정보</Box>
                   <Tooltip title="프로필 수정" placement="top">
-                    <IconButton size="small" onClick={() => setBasicInfoOpen(true)} sx={{ color: '#6366F1', background: 'rgba(99,102,241,0.08)', '&:hover': { background: 'rgba(99,102,241,0.15)' }, borderRadius: '10px' }}>
+                    <IconButton size="small" onClick={() => setBasicInfoOpen(true)} aria-label="프로필 기본 정보 수정" sx={{ color: '#6366F1', background: 'rgba(99,102,241,0.08)', '&:hover': { background: 'rgba(99,102,241,0.15)' }, borderRadius: '10px' }}>
                       <SettingsIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Tooltip>
@@ -563,7 +610,12 @@ function AboutMe() {
                       {/* showInHome toggle */}
                       <Tooltip title={section.showInHome ? '홈 탭 노출 중 (클릭하여 숨기기)' : '홈 탭 숨김 (클릭하여 표시)'} placement="top">
                         <Box
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`${section.title} 홈 탭 ${section.showInHome ? '숨기기' : '표시하기'}`}
+                          aria-pressed={section.showInHome}
                           onClick={(e) => { e.stopPropagation(); updateSection(section.id, { showInHome: !section.showInHome }); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); updateSection(section.id, { showInHome: !section.showInHome }); } }}
                           sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1.2, py: 0.4, borderRadius: '10px', cursor: 'pointer', flexShrink: 0, background: section.showInHome ? 'rgba(99,102,241,0.08)' : 'rgba(148,163,184,0.08)', border: section.showInHome ? '1px solid rgba(99,102,241,0.2)' : '1px solid rgba(148,163,184,0.2)', transition: 'all 0.2s ease', '&:hover': { background: section.showInHome ? 'rgba(99,102,241,0.15)' : 'rgba(148,163,184,0.15)' } }}
                         >
                           <HomeIcon sx={{ fontSize: 13, color: section.showInHome ? '#6366F1' : '#94A3B8' }} />
@@ -585,7 +637,7 @@ function AboutMe() {
                             value={editingContent}
                             onChange={(e) => setEditingContent(e.target.value)}
                             sx={{ mb: 1.5 }}
-                            inputProps={{ maxLength: 500 }}
+                            slotProps={{ htmlInput: { maxLength: 500 } }}
                             autoFocus
                           />
                           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -608,6 +660,7 @@ function AboutMe() {
                             <IconButton
                               size="small"
                               onClick={() => startContentEdit(section)}
+                              aria-label={`${section.title} 내용 편집`}
                               sx={{ position: 'absolute', top: 0, right: 0, color: '#CBD5E1', '&:hover': { color: '#6366F1', background: 'rgba(99,102,241,0.08)' }, borderRadius: '8px' }}
                             >
                               <EditIcon sx={{ fontSize: '0.9rem' }} />
@@ -625,7 +678,7 @@ function AboutMe() {
       </Box>
 
       {/* ── Skills ── */}
-      <SkillsSection />
+      <SkillsSection onSaved={showToast} />
 
       {/* ── CTA ── */}
       <Box sx={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #F3E8FF 100%)', py: { xs: 8, md: 11 }, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -653,8 +706,14 @@ function AboutMe() {
         open={basicInfoOpen}
         onClose={() => setBasicInfoOpen(false)}
         info={basicInfo}
-        onSave={(form) => updateBasicInfo(form)}
+        onSave={(form) => { updateBasicInfo(form); showToast('프로필 정보가 저장되었습니다.'); }}
       />
+
+      <Snackbar open={toast.open} autoHideDuration={2500} onClose={closeToast} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert severity={toast.severity} onClose={closeToast} sx={{ borderRadius: '12px' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
