@@ -47,12 +47,12 @@ export const CATEGORIES = [
 ];
 
 export const CATEGORY_META = {
-  Frontend: { color: '#0EA5E9', bg: '#E0F2FE' },
-  'Backend & Database': { color: '#10B981', bg: '#D1FAE5' },
-  'AI Tool': { color: '#8B5CF6', bg: '#EDE9FE' },
-  'Development Tool': { color: '#F59E0B', bg: '#FEF3C7' },
-  'Collaboration Tool': { color: '#6366F1', bg: '#EEF2FF' },
-  Design: { color: '#EC4899', bg: '#FCE7F3' },
+  Frontend: { color: '#D88C7A', bg: '#F7EAE6' },
+  'Backend & Database': { color: '#7A8F7B', bg: '#EAEEE9' },
+  'AI Tool': { color: '#D9A273', bg: '#F7EEE3' },
+  'Development Tool': { color: '#C99A3E', bg: '#F7EFDE' },
+  'Collaboration Tool': { color: '#8B7355', bg: '#EFE8DD' },
+  Design: { color: '#C97B63', bg: '#F5E6E0' },
 };
 
 export const skillsData = [

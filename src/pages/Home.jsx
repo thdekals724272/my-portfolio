@@ -37,7 +37,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { supabase } from '../lib/supabase';
 
 // ─── Design Tokens ───────────────────────────────────────────
-const G = 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)';
+const G = '#7A8F7B';
 const GLASS = {
   background: 'rgba(255,255,255,0.75)',
   backdropFilter: 'blur(20px)',
@@ -51,14 +51,14 @@ const EMAIL = 'thdekals724272@gmail.com';
 const WHATSAPP = '+82-10-0000-0000';
 
 const TECH_COLORS = {
-  React: '#0EA5E9',
+  React: '#C17F59',
   Supabase: '#10B981',
-  PostgreSQL: '#3B82F6',
-  MUI: '#6366F1',
-  CSS3: '#8B5CF6',
+  PostgreSQL: '#8B7355',
+  MUI: '#7A8F7B',
+  CSS3: '#D9A273',
   Recharts: '#F59E0B',
-  'AI-Assisted': '#8B5CF6',
-  'UI/UX': '#EC4899',
+  'AI-Assisted': '#D9A273',
+  'UI/UX': '#D88C7A',
 };
 
 const HERO_BADGES = ['AI-Assisted', 'React', 'Supabase', 'UI/UX'];
@@ -94,9 +94,9 @@ const sectionLabel = {
   display: 'inline-block',
   px: 2, py: 0.6, mb: 2,
   borderRadius: '999px',
-  background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1))',
-  border: '1px solid rgba(99,102,241,0.2)',
-  color: '#6366F1',
+  background: 'linear-gradient(135deg, rgba(122,143,123,0.1), rgba(217,162,115,0.1))',
+  border: '1px solid rgba(122,143,123,0.2)',
+  color: '#7A8F7B',
   fontSize: '0.7rem',
   fontWeight: 700,
   letterSpacing: 1.5,
@@ -123,7 +123,7 @@ function FadeIn({ children, delay = 0, direction = 'up' }) {
 
 function SectionDivider() {
   return (
-    <Box sx={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent)', mx: 4 }} />
+    <Box sx={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(122,143,123,0.15), transparent)', mx: 4 }} />
   );
 }
 
@@ -147,23 +147,23 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
         maxWidth: compact ? 320 : 380,
         width: '100%',
         mx: { xs: 'auto', md: 0 },
-        boxShadow: '0 20px 60px rgba(99,102,241,0.16)',
+        boxShadow: '0 20px 60px rgba(122,143,123,0.16)',
         transition: 'transform 0.35s ease, box-shadow 0.35s ease',
-        '&:hover': { transform: 'scale(1.03)', boxShadow: '0 28px 72px rgba(99,102,241,0.22)' },
+        '&:hover': { transform: 'scale(1.03)', boxShadow: '0 28px 72px rgba(122,143,123,0.22)' },
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
         <Avatar
           src={basicInfo.photo || undefined}
-          sx={{ width: 64, height: 64, background: G, fontSize: 28, boxShadow: '0 8px 20px rgba(99,102,241,0.3)', border: '3px solid rgba(255,255,255,0.9)' }}
+          sx={{ width: 64, height: 64, background: G, fontSize: 28, boxShadow: '0 8px 20px rgba(122,143,123,0.3)', border: '3px solid rgba(255,255,255,0.9)' }}
         >
           {!basicInfo.photo && '👤'}
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: '1.05rem' }}>
             {basicInfo.name}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#6366F1', fontWeight: 700, fontSize: '0.8rem' }}>
+          <Typography variant="body2" sx={{ color: '#7A8F7B', fontWeight: 700, fontSize: '0.8rem' }}>
             {basicInfo.position}
           </Typography>
         </Box>
@@ -175,9 +175,9 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
             key={b}
             sx={{
               px: 1.4, py: 0.4, borderRadius: '999px', fontSize: '0.7rem', fontWeight: 700,
-              background: `${TECH_COLORS[b] || '#6366F1'}14`,
-              color: TECH_COLORS[b] || '#6366F1',
-              border: `1px solid ${TECH_COLORS[b] || '#6366F1'}30`,
+              background: `${TECH_COLORS[b] || '#7A8F7B'}14`,
+              color: TECH_COLORS[b] || '#7A8F7B',
+              border: `1px solid ${TECH_COLORS[b] || '#7A8F7B'}30`,
             }}
           >
             {b}
@@ -185,9 +185,9 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
         ))}
       </Box>
 
-      <Box sx={{ height: '1px', background: 'rgba(99,102,241,0.1)', mb: 2.5 }} />
+      <Box sx={{ height: '1px', background: 'rgba(122,143,123,0.1)', mb: 2.5 }} />
 
-      <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, fontSize: '0.65rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1.2 }}>
+      <Typography variant="caption" sx={{ color: '#9C9691', fontWeight: 700, fontSize: '0.65rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1.2 }}>
         만든 프로젝트
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
@@ -200,15 +200,15 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
               display: 'block', textDecoration: 'none', minHeight: 44,
               p: 1.4, borderRadius: '14px',
               background: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(99,102,241,0.1)',
+              border: '1px solid rgba(122,143,123,0.1)',
               transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-              '&:hover': { transform: 'scale(1.03)', boxShadow: '0 8px 20px rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)' },
+              '&:hover': { transform: 'scale(1.03)', boxShadow: '0 8px 20px rgba(122,143,123,0.15)', border: '1px solid rgba(122,143,123,0.25)' },
             }}
           >
-            <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.85rem' }}>
+            <Typography variant="body2" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: '0.85rem' }}>
               {p.name}
             </Typography>
-            <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem' }}>
+            <Typography variant="caption" sx={{ color: '#6B7280', fontSize: '0.72rem' }}>
               {p.desc}
             </Typography>
           </Box>
@@ -220,9 +220,9 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
 
 // ─── Hero ─────────────────────────────────────────────────────
 const HERO_ORBS = [
-  { size: 620, color: 'rgba(99,102,241,0.18)', top: -200, right: -140, anim: floatSlow, dur: '11s' },
-  { size: 460, color: 'rgba(45,212,191,0.16)', bottom: -140, left: -100, anim: floatMed, dur: '13s' },
-  { size: 320, color: 'rgba(139,92,246,0.14)', top: '30%', left: '4%', anim: floatFast, dur: '9s' },
+  { size: 620, color: 'rgba(122,143,123,0.18)', top: -200, right: -140, anim: floatSlow, dur: '11s' },
+  { size: 460, color: 'rgba(216,140,122,0.16)', bottom: -140, left: -100, anim: floatMed, dur: '13s' },
+  { size: 320, color: 'rgba(217,162,115,0.14)', top: '30%', left: '4%', anim: floatFast, dur: '9s' },
 ];
 
 const HeroSection = memo(function HeroSection() {
@@ -254,7 +254,7 @@ const HeroSection = memo(function HeroSection() {
         minHeight: isMobile ? 'auto' : '90vh',
         display: 'flex',
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #EEF2FF 0%, #F0FDFA 45%, #F5F3FF 100%)',
+        background: 'linear-gradient(135deg, #FBF6F0 0%, #FBF7F1 45%, #F7F0E8 100%)',
         pt: isMobile ? 6 : isTablet ? 9 : 12,
         pb: isMobile ? 8 : isTablet ? 9 : 12,
       }}
@@ -280,8 +280,8 @@ const HeroSection = memo(function HeroSection() {
       {/* 은은한 라인 액센트 (모바일에서는 생략) */}
       {!isMobile && (
         <>
-          <Box sx={{ position: 'absolute', top: '18%', left: '-5%', width: '45%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.25), transparent)', transform: 'rotate(-8deg)', pointerEvents: 'none' }} />
-          <Box sx={{ position: 'absolute', bottom: '22%', right: '-5%', width: '40%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(45,212,191,0.3), transparent)', transform: 'rotate(6deg)', pointerEvents: 'none' }} />
+          <Box sx={{ position: 'absolute', top: '18%', left: '-5%', width: '45%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(122,143,123,0.25), transparent)', transform: 'rotate(-8deg)', pointerEvents: 'none' }} />
+          <Box sx={{ position: 'absolute', bottom: '22%', right: '-5%', width: '40%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(216,140,122,0.3), transparent)', transform: 'rotate(6deg)', pointerEvents: 'none' }} />
         </>
       )}
 
@@ -294,9 +294,9 @@ const HeroSection = memo(function HeroSection() {
           {/* 왼쪽 — 텍스트 */}
           <Box sx={{ width: isMobile ? '100%' : '50%', textAlign: isMobile ? 'center' : 'left' }}>
             <FadeInMount>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2.5, py: 0.9, mb: 3, borderRadius: '999px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', border: '1px solid rgba(99,102,241,0.2)', boxShadow: '0 2px 12px rgba(99,102,241,0.08)' }}>
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2.5, py: 0.9, mb: 3, borderRadius: '999px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', border: '1px solid rgba(122,143,123,0.2)', boxShadow: '0 2px 12px rgba(122,143,123,0.08)' }}>
                 <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px #22C55E88' }} />
-                <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 700, fontSize: '0.78rem', letterSpacing: 0.3 }}>
+                <Typography variant="caption" sx={{ color: '#7A8F7B', fontWeight: 700, fontSize: '0.78rem', letterSpacing: 0.3 }}>
                   Product Builder · Available
                 </Typography>
               </Box>
@@ -308,7 +308,7 @@ const HeroSection = memo(function HeroSection() {
                 sx={{
                   fontWeight: 800,
                   fontSize: isMobile ? '1.85rem' : isTablet ? '2.5rem' : '3.2rem',
-                  color: '#0F172A',
+                  color: '#2F2F2F',
                   lineHeight: 1.3,
                   letterSpacing: '-0.02em',
                   wordBreak: 'keep-all',
@@ -320,7 +320,7 @@ const HeroSection = memo(function HeroSection() {
                 <Box
                   component="span"
                   sx={{
-                    background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 55%, #2DD4BF 100%)',
+                    background: 'linear-gradient(135deg, #7A8F7B 0%, #D9A273 55%, #D88C7A 100%)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
                   }}
                 >
@@ -334,7 +334,7 @@ const HeroSection = memo(function HeroSection() {
               <Typography
                 variant="body1"
                 sx={{
-                  color: '#475569',
+                  color: '#4B4842',
                   mb: 4.5,
                   lineHeight: 1.75,
                   fontSize: isMobile ? '0.95rem' : isTablet ? '1.05rem' : '1.15rem',
@@ -353,11 +353,11 @@ const HeroSection = memo(function HeroSection() {
                   sx={{
                     background: G, color: '#FFF', fontWeight: 700, px: 4.5, py: 1.6, minHeight: 44,
                     borderRadius: '999px', width: isDesktop ? 'auto' : '100%',
-                    boxShadow: '0 8px 24px rgba(99,102,241,0.35)',
+                    boxShadow: '0 8px 24px rgba(122,143,123,0.35)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-                      boxShadow: '0 16px 38px rgba(99,102,241,0.45)',
+                      background: '#647566',
+                      boxShadow: '0 16px 38px rgba(122,143,123,0.45)',
                       transform: 'scale(1.03) translateY(-2px)',
                     },
                     '&:active': { transform: 'scale(0.97)' },
@@ -368,15 +368,15 @@ const HeroSection = memo(function HeroSection() {
                 <Button
                   variant="outlined" size="large" onClick={scrollToAbout} aria-label="About Me 섹션으로 스크롤 이동"
                   sx={{
-                    borderColor: 'rgba(99,102,241,0.35)', color: '#6366F1', fontWeight: 700, px: 4.5, py: 1.6, minHeight: 44,
+                    borderColor: 'rgba(122,143,123,0.35)', color: '#7A8F7B', fontWeight: 700, px: 4.5, py: 1.6, minHeight: 44,
                     borderRadius: '999px', width: isDesktop ? 'auto' : '100%',
                     backgroundColor: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      backgroundColor: 'rgba(99,102,241,0.08)',
-                      borderColor: '#6366F1',
+                      backgroundColor: 'rgba(122,143,123,0.08)',
+                      borderColor: '#7A8F7B',
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 20px rgba(99,102,241,0.15)',
+                      boxShadow: '0 8px 20px rgba(122,143,123,0.15)',
                     },
                     '&:active': { transform: 'scale(0.97)' },
                   }}
@@ -396,11 +396,11 @@ const HeroSection = memo(function HeroSection() {
                     rel="noopener noreferrer"
                     aria-label="GitHub 프로필 새 탭에서 열기"
                     sx={{
-                      width: 44, height: 44, color: '#64748B',
+                      width: 44, height: 44, color: '#6B7280',
                       background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(99,102,241,0.15)',
+                      border: '1px solid rgba(122,143,123,0.15)',
                       transition: 'all 0.3s ease',
-                      '&:hover': { color: '#6366F1', background: 'rgba(99,102,241,0.08)', borderColor: 'rgba(99,102,241,0.3)', transform: 'translateY(-3px)', boxShadow: '0 8px 20px rgba(99,102,241,0.2)' },
+                      '&:hover': { color: '#7A8F7B', background: 'rgba(122,143,123,0.08)', borderColor: 'rgba(122,143,123,0.3)', transform: 'translateY(-3px)', boxShadow: '0 8px 20px rgba(122,143,123,0.2)' },
                       '&:active': { transform: 'scale(0.94)' },
                     }}
                   >
@@ -413,11 +413,11 @@ const HeroSection = memo(function HeroSection() {
                     href="mailto:thdekals724272@gmail.com"
                     aria-label="이메일 보내기"
                     sx={{
-                      width: 44, height: 44, color: '#64748B',
+                      width: 44, height: 44, color: '#6B7280',
                       background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(99,102,241,0.15)',
+                      border: '1px solid rgba(122,143,123,0.15)',
                       transition: 'all 0.3s ease',
-                      '&:hover': { color: '#6366F1', background: 'rgba(99,102,241,0.08)', borderColor: 'rgba(99,102,241,0.3)', transform: 'translateY(-3px)', boxShadow: '0 8px 20px rgba(99,102,241,0.2)' },
+                      '&:hover': { color: '#7A8F7B', background: 'rgba(122,143,123,0.08)', borderColor: 'rgba(122,143,123,0.3)', transform: 'translateY(-3px)', boxShadow: '0 8px 20px rgba(122,143,123,0.2)' },
                       '&:active': { transform: 'scale(0.94)' },
                     }}
                   >
@@ -450,11 +450,11 @@ const HeroSection = memo(function HeroSection() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 0.3,
             minWidth: 44, minHeight: 44,
-            cursor: 'pointer', color: '#6366F1', zIndex: 1, borderRadius: '14px',
+            cursor: 'pointer', color: '#7A8F7B', zIndex: 1, borderRadius: '14px',
             transition: 'color 0.3s ease',
-            '&:hover': { color: '#4F46E5' },
+            '&:hover': { color: '#647566' },
             '&:active': { transform: 'translateX(-50%) scale(0.94)' },
-            '&:focus-visible': { outline: '2px solid #6366F1', outlineOffset: 2 },
+            '&:focus-visible': { outline: '2px solid #7A8F7B', outlineOffset: 2 },
           }}
         >
           <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.68rem', letterSpacing: 1.2, textTransform: 'uppercase' }}>
@@ -479,10 +479,10 @@ const AboutSection = memo(function AboutSection() {
         <FadeIn>
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={sectionLabel}>어떤 사람인지</Box>
-            <Typography variant="h3" sx={{ mb: 1, fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
+            <Typography variant="h3" sx={{ mb: 1, fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
               {basicInfo.name} 소개
             </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B' }}>
+            <Typography variant="body2" sx={{ color: '#6B7280' }}>
               {basicInfo.position}
             </Typography>
           </Box>
@@ -493,7 +493,7 @@ const AboutSection = memo(function AboutSection() {
           {/* Left — Story cards */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {content.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 6, color: '#94A3B8' }}>
+              <Box sx={{ textAlign: 'center', py: 6, color: '#9C9691' }}>
                 <Typography variant="body2">About Me 탭에서 이야기를 추가하면 여기에 표시됩니다.</Typography>
               </Box>
             ) : content.map((section, i) => (
@@ -503,21 +503,21 @@ const AboutSection = memo(function AboutSection() {
                     display: 'flex', gap: 2.5, alignItems: 'flex-start',
                     background: 'rgba(255,255,255,0.75)',
                     backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(99,102,241,0.1)',
+                    border: '1px solid rgba(122,143,123,0.1)',
                     borderRadius: '20px', p: 3,
-                    boxShadow: '0 2px 14px rgba(99,102,241,0.06)',
+                    boxShadow: '0 2px 14px rgba(122,143,123,0.06)',
                     transition: 'all 0.25s ease',
-                    '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 10px 30px rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.2)' },
+                    '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 10px 30px rgba(122,143,123,0.12)', border: '1px solid rgba(122,143,123,0.2)' },
                   }}
                 >
-                  <Box sx={{ width: 44, height: 44, borderRadius: '13px', flexShrink: 0, background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: '13px', flexShrink: 0, background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
                     {section.emoji}
                   </Box>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '0.93rem' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '0.93rem' }}>
                       {section.title}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748B', lineHeight: 1.8, fontSize: '0.85rem' }}>
+                    <Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.8, fontSize: '0.85rem' }}>
                       {section.summary}
                     </Typography>
                   </Box>
@@ -534,9 +534,9 @@ const AboutSection = memo(function AboutSection() {
                 width: { xs: '100%', md: 220 },
                 background: 'rgba(255,255,255,0.75)',
                 backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(99,102,241,0.12)',
+                border: '1px solid rgba(122,143,123,0.12)',
                 borderRadius: '24px', p: 3,
-                boxShadow: '0 4px 20px rgba(99,102,241,0.07)',
+                boxShadow: '0 4px 20px rgba(122,143,123,0.07)',
                 textAlign: 'center',
               }}
             >
@@ -546,7 +546,7 @@ const AboutSection = memo(function AboutSection() {
                   width: 76, height: 76, borderRadius: '50%', mx: 'auto', mb: 1.5,
                   background: basicInfo.photo ? 'transparent' : G,
                   border: '3px solid rgba(255,255,255,0.9)',
-                  boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
+                  boxShadow: '0 8px 24px rgba(122,143,123,0.25)',
                   overflow: 'hidden',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 34,
@@ -557,17 +557,17 @@ const AboutSection = memo(function AboutSection() {
                   : '👤'
                 }
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '0.95rem' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '0.95rem' }}>
                 {basicInfo.name}
               </Typography>
               <Box sx={{ display: 'inline-block', px: 1.5, py: 0.4, borderRadius: '999px', background: G, color: '#FFF', fontSize: '0.68rem', fontWeight: 700, mb: 2, lineHeight: 1.5 }}>
                 {basicInfo.position}
               </Box>
-              <Box sx={{ height: '1px', background: 'rgba(99,102,241,0.1)', mb: 2 }} />
-              <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, fontSize: '0.65rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 0.5 }}>
+              <Box sx={{ height: '1px', background: 'rgba(122,143,123,0.1)', mb: 2 }} />
+              <Typography variant="caption" sx={{ color: '#9C9691', fontWeight: 700, fontSize: '0.65rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 0.5 }}>
                 관심 분야
               </Typography>
-              <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.78rem', lineHeight: 1.6 }}>
+              <Typography variant="body2" sx={{ color: '#4B4842', fontSize: '0.78rem', lineHeight: 1.6 }}>
                 {basicInfo.interest}
               </Typography>
             </Box>
@@ -578,12 +578,12 @@ const AboutSection = memo(function AboutSection() {
         {topSkills.length > 0 && (
           <FadeIn delay={200}>
             <Box sx={{ mb: 5 }}>
-              <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, fontSize: '0.68rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
+              <Typography variant="caption" sx={{ color: '#9C9691', fontWeight: 700, fontSize: '0.68rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
                 주요 스킬
               </Typography>
               <Box sx={{ display: 'flex', gap: 1.2, flexWrap: 'wrap' }}>
                 {topSkills.map((skill) => {
-                  const meta = CATEGORY_META[skill.category] || { color: '#6366F1', bg: '#EEF2FF' };
+                  const meta = CATEGORY_META[skill.category] || { color: '#7A8F7B', bg: '#FBF6F0' };
                   return (
                     <Box
                       key={skill.id}
@@ -613,8 +613,8 @@ const AboutSection = memo(function AboutSection() {
               sx={{
                 background: G, color: '#FFF', fontWeight: 700,
                 px: 4.5, py: 1.3, borderRadius: '14px',
-                boxShadow: '0 8px 24px rgba(99,102,241,0.3)',
-                '&:hover': { background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', transform: 'translateY(-2px)', boxShadow: '0 12px 32px rgba(99,102,241,0.4)' },
+                boxShadow: '0 8px 24px rgba(122,143,123,0.3)',
+                '&:hover': { background: '#647566', transform: 'translateY(-2px)', boxShadow: '0 12px 32px rgba(122,143,123,0.4)' },
                 transition: 'all 0.25s ease',
               }}
             >
@@ -633,22 +633,22 @@ const SkillSection = memo(function SkillSection() {
   const { skills: topSkills } = homeData;
 
   return (
-    <Box component="section" aria-label="어떤 도구를 쓰는지" sx={{ backgroundColor: '#F8FAFF', py: { xs: 8, md: 12 } }}>
+    <Box component="section" aria-label="어떤 도구를 쓰는지" sx={{ backgroundColor: '#FAF8F5', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md" sx={{ textAlign: 'center' }}>
         <FadeIn>
           <Box sx={sectionLabel}>어떤 도구로</Box>
-          <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
+          <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
             기술 스택
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 5 }}>서비스를 만들 때 활용하는 주요 도구입니다.</Typography>
+          <Typography variant="body2" sx={{ color: '#6B7280', mb: 5 }}>서비스를 만들 때 활용하는 주요 도구입니다.</Typography>
           {topSkills.length === 0 ? (
-            <Box sx={{ py: 6, color: '#94A3B8' }}>
+            <Box sx={{ py: 6, color: '#9C9691' }}>
               <Typography variant="body2">About Me 탭에서 스킬을 추가하면 여기에 표시됩니다.</Typography>
             </Box>
           ) : (
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
             {topSkills.map((skill, i) => {
-              const meta = CATEGORY_META[skill.category] || { color: '#6366F1', bg: '#EEF2FF' };
+              const meta = CATEGORY_META[skill.category] || { color: '#7A8F7B', bg: '#FBF6F0' };
               return (
                 <FadeIn key={skill.id} delay={i * 70}>
                   <Box
@@ -687,9 +687,9 @@ const SkillSection = memo(function SkillSection() {
             to="/about"
             aria-label="About Me에서 전체 스킬 보기"
             sx={{
-              mt: 5, borderColor: 'rgba(99,102,241,0.3)', color: '#6366F1', fontWeight: 700,
+              mt: 5, borderColor: 'rgba(122,143,123,0.3)', color: '#7A8F7B', fontWeight: 700,
               px: 4, py: 1.1, borderRadius: '14px', fontSize: '0.88rem',
-              '&:hover': { background: 'rgba(99,102,241,0.06)', borderColor: '#6366F1', transform: 'translateY(-2px)' },
+              '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'translateY(-2px)' },
               transition: 'all 0.25s ease',
             }}
           >
@@ -726,15 +726,15 @@ const ProjectsSection = memo(function ProjectsSection() {
       <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
         <FadeIn>
           <Box sx={sectionLabel}>어떤 프로젝트를</Box>
-          <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#0F172A', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
+          <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
             대표 프로젝트
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 5 }}>AI와 함께 직접 기획하고 만든 서비스들입니다.</Typography>
+          <Typography variant="body2" sx={{ color: '#6B7280', mb: 5 }}>AI와 함께 직접 기획하고 만든 서비스들입니다.</Typography>
         </FadeIn>
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress sx={{ color: '#6366F1' }} />
+            <CircularProgress sx={{ color: '#7A8F7B' }} />
           </Box>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mb: 5 }}>
@@ -747,17 +747,17 @@ const ProjectsSection = memo(function ProjectsSection() {
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    boxShadow: '0 4px 24px rgba(99,102,241,0.07)',
+                    boxShadow: '0 4px 24px rgba(122,143,123,0.07)',
                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': { transform: 'translateY(-7px) scale(1.01)', boxShadow: '0 20px 48px rgba(99,102,241,0.16)' },
+                    '&:hover': { transform: 'translateY(-7px) scale(1.01)', boxShadow: '0 20px 48px rgba(122,143,123,0.16)' },
                   }}
                 >
-                  <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#F1F5F9', overflow: 'hidden' }}>
+                  <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#EFEAE3', overflow: 'hidden' }}>
                     {!imgErrors[project.id] && project.thumbnail_url ? (
                       <>
                         {!imgLoaded[project.id] && (
-                          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)' }}>
-                            <CircularProgress size={24} sx={{ color: '#6366F1' }} />
+                          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)' }}>
+                            <CircularProgress size={24} sx={{ color: '#7A8F7B' }} />
                           </Box>
                         )}
                         <Box
@@ -778,10 +778,10 @@ const ProjectsSection = memo(function ProjectsSection() {
                   </Box>
 
                   <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', flex: 1, textAlign: 'left' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
                       {project.title}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748B', lineHeight: 1.7, mb: 2, flex: 1, fontSize: '0.84rem' }}>
+                    <Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.7, mb: 2, flex: 1, fontSize: '0.84rem' }}>
                       {project.description}
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.7, mb: 2.5 }}>
@@ -792,9 +792,9 @@ const ProjectsSection = memo(function ProjectsSection() {
                           size="small"
                           sx={{
                             fontSize: '0.68rem', fontWeight: 700, height: 22, borderRadius: '8px',
-                            backgroundColor: `${TECH_COLORS[tech] || '#6366F1'}15`,
-                            color: TECH_COLORS[tech] || '#6366F1',
-                            border: `1px solid ${TECH_COLORS[tech] || '#6366F1'}30`,
+                            backgroundColor: `${TECH_COLORS[tech] || '#7A8F7B'}15`,
+                            color: TECH_COLORS[tech] || '#7A8F7B',
+                            border: `1px solid ${TECH_COLORS[tech] || '#7A8F7B'}30`,
                           }}
                         />
                       ))}
@@ -811,8 +811,8 @@ const ProjectsSection = memo(function ProjectsSection() {
                           sx={{
                             flex: 1, background: G, fontWeight: 700, fontSize: '0.74rem',
                             borderRadius: '10px', py: 0.8,
-                            boxShadow: '0 4px 12px rgba(99,102,241,0.28)',
-                            '&:hover': { background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', transform: 'translateY(-1px)' },
+                            boxShadow: '0 4px 12px rgba(122,143,123,0.28)',
+                            '&:hover': { background: '#647566', transform: 'translateY(-1px)' },
                             transition: 'all 0.2s ease',
                           }}
                         >
@@ -827,9 +827,9 @@ const ProjectsSection = memo(function ProjectsSection() {
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         sx={{
-                          flex: 1, borderColor: 'rgba(99,102,241,0.28)', color: '#6366F1',
+                          flex: 1, borderColor: 'rgba(122,143,123,0.28)', color: '#7A8F7B',
                           fontWeight: 700, fontSize: '0.74rem', borderRadius: '10px', py: 0.8,
-                          '&:hover': { borderColor: '#6366F1', background: 'rgba(99,102,241,0.05)', transform: 'translateY(-1px)' },
+                          '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.05)', transform: 'translateY(-1px)' },
                           transition: 'all 0.2s ease',
                         }}
                       >
@@ -849,9 +849,9 @@ const ProjectsSection = memo(function ProjectsSection() {
             component={Link}
             to="/projects"
             sx={{
-              borderColor: 'rgba(99,102,241,0.3)', color: '#6366F1', fontWeight: 700,
+              borderColor: 'rgba(122,143,123,0.3)', color: '#7A8F7B', fontWeight: 700,
               px: 5, py: 1.3, borderRadius: '14px', fontSize: '0.95rem',
-              '&:hover': { background: 'rgba(99,102,241,0.06)', borderColor: '#6366F1', transform: 'translateY(-2px)' },
+              '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'translateY(-2px)' },
               transition: 'all 0.25s ease',
             }}
           >
@@ -956,22 +956,22 @@ const ContactSection = memo(function ContactSection() {
     display: 'flex',
     alignItems: 'center',
     gap: 2,
-    boxShadow: '0 4px 20px rgba(99,102,241,0.06)',
+    boxShadow: '0 4px 20px rgba(122,143,123,0.06)',
     transition: 'all 0.25s ease',
   };
 
   return (
-    <Box component="section" sx={{ background: 'linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%)', py: { xs: 8, md: 12 } }}>
+    <Box component="section" sx={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #FFFFFF 100%)', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md">
 
         {/* Header */}
         <FadeIn>
           <Box sx={{ textAlign: 'center', mb: 7 }}>
             <Box sx={sectionLabel}>Contact</Box>
-            <Typography variant="h3" sx={{ fontWeight: 800, color: '#0F172A', mb: 1.5, fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 1.5, fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
               연락하기
             </Typography>
-            <Typography variant="body1" sx={{ color: '#64748B', lineHeight: 1.8 }}>
+            <Typography variant="body1" sx={{ color: '#6B7280', lineHeight: 1.8 }}>
               언제든지 편하게 연락해주세요. 빠르게 답변드리겠습니다.
             </Typography>
           </Box>
@@ -981,15 +981,15 @@ const ContactSection = memo(function ContactSection() {
         <FadeIn delay={100}>
           <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: { xs: 'column', sm: 'row' } }}>
             {/* Email */}
-            <Box sx={{ ...contactCardSx, '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 16px 40px rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)' } }}>
-              <Box sx={{ width: 48, height: 48, borderRadius: '14px', background: 'linear-gradient(135deg, #EEF2FF, #E0E7FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <EmailIcon sx={{ color: '#6366F1', fontSize: 22 }} />
+            <Box sx={{ ...contactCardSx, '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 16px 40px rgba(122,143,123,0.12)', border: '1px solid rgba(122,143,123,0.25)' } }}>
+              <Box sx={{ width: 48, height: 48, borderRadius: '14px', background: 'linear-gradient(135deg, #FBF6F0, #F3E9DD)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <EmailIcon sx={{ color: '#7A8F7B', fontSize: 22 }} />
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.67rem' }}>Email</Typography>
-                <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 600, mt: 0.3, wordBreak: 'break-all', fontSize: '0.82rem' }}>{EMAIL}</Typography>
+                <Typography variant="caption" sx={{ color: '#9C9691', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.67rem' }}>Email</Typography>
+                <Typography variant="body2" sx={{ color: '#2F2F2F', fontWeight: 600, mt: 0.3, wordBreak: 'break-all', fontSize: '0.82rem' }}>{EMAIL}</Typography>
               </Box>
-              <IconButton size="small" onClick={handleCopyEmail} sx={{ color: copied ? '#22C55E' : '#94A3B8', flexShrink: 0, transition: 'color 0.2s' }}>
+              <IconButton size="small" onClick={handleCopyEmail} sx={{ color: copied ? '#22C55E' : '#9C9691', flexShrink: 0, transition: 'color 0.2s' }}>
                 {copied ? <CheckIcon fontSize="small" /> : <ContentCopyIcon fontSize="small" />}
               </IconButton>
             </Box>
@@ -1005,8 +1005,8 @@ const ContactSection = memo(function ContactSection() {
                 <WhatsAppIcon sx={{ color: '#25D366', fontSize: 22 }} />
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.67rem' }}>WhatsApp</Typography>
-                <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 600, mt: 0.3, fontSize: '0.82rem' }}>{WHATSAPP}</Typography>
+                <Typography variant="caption" sx={{ color: '#9C9691', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', fontSize: '0.67rem' }}>WhatsApp</Typography>
+                <Typography variant="body2" sx={{ color: '#2F2F2F', fontWeight: 600, mt: 0.3, fontSize: '0.82rem' }}>{WHATSAPP}</Typography>
               </Box>
             </Box>
           </Box>
@@ -1016,7 +1016,7 @@ const ContactSection = memo(function ContactSection() {
         <FadeIn delay={200}>
           <Box sx={{ display: 'flex', gap: 1.5, mb: 7, justifyContent: 'center' }}>
             {[
-              { icon: <GitHubIcon sx={{ fontSize: 20 }} />, label: 'GitHub', href: 'https://github.com/thdekals724272', color: '#0F172A', bg: '#F1F5F9' },
+              { icon: <GitHubIcon sx={{ fontSize: 20 }} />, label: 'GitHub', href: 'https://github.com/thdekals724272', color: '#2F2F2F', bg: '#EFEAE3' },
               { icon: <LinkedInIcon sx={{ fontSize: 20 }} />, label: 'LinkedIn', href: '#', color: '#0A66C2', bg: '#EFF6FF' },
               { icon: <InstagramIcon sx={{ fontSize: 20 }} />, label: 'Instagram', href: '#', color: '#E1306C', bg: '#FFF0F5' },
             ].map(({ icon, label, href, color, bg }) => (
@@ -1029,7 +1029,7 @@ const ContactSection = memo(function ContactSection() {
                 sx={{
                   width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   borderRadius: '12px', background: bg, border: '1px solid transparent',
-                  color: '#64748B', textDecoration: 'none',
+                  color: '#6B7280', textDecoration: 'none',
                   transition: 'all 0.22s ease',
                   '&:hover': { color, background: bg, border: `1px solid ${color}30`, transform: 'translateY(-3px)', boxShadow: `0 8px 20px ${color}22` },
                 }}
@@ -1040,15 +1040,15 @@ const ContactSection = memo(function ContactSection() {
           </Box>
         </FadeIn>
 
-        <Divider sx={{ mb: 7, borderColor: 'rgba(99,102,241,0.1)' }} />
+        <Divider sx={{ mb: 7, borderColor: 'rgba(122,143,123,0.1)' }} />
 
         {/* Guestbook header */}
         <FadeIn>
           <Box sx={{ textAlign: 'center', mb: 5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', mb: 1, letterSpacing: '-0.02em' }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 1, letterSpacing: '-0.02em' }}>
               방명록
             </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B' }}>
+            <Typography variant="body2" sx={{ color: '#6B7280' }}>
               방문해주셔서 감사합니다. 짧은 메시지를 남겨주세요 😊
             </Typography>
           </Box>
@@ -1058,9 +1058,9 @@ const ContactSection = memo(function ContactSection() {
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{ ...GLASS, borderRadius: '24px', p: { xs: 3, md: 4 }, mb: 4, boxShadow: '0 4px 24px rgba(99,102,241,0.08)' }}
+          sx={{ ...GLASS, borderRadius: '24px', p: { xs: 3, md: 4 }, mb: 4, boxShadow: '0 4px 24px rgba(122,143,123,0.08)' }}
         >
-          <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mb: 1.5, fontSize: '0.82rem' }}>이모지 선택</Typography>
+          <Typography variant="body2" sx={{ color: '#6B7280', fontWeight: 700, mb: 1.5, fontSize: '0.82rem' }}>이모지 선택</Typography>
           <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap', mb: 3 }}>
             {EMOJIS.map((emoji) => (
               <Box
@@ -1074,12 +1074,12 @@ const ContactSection = memo(function ContactSection() {
                 sx={{
                   width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 20, borderRadius: '12px', cursor: 'pointer',
-                  border: form.emoji === emoji ? '2px solid #6366F1' : '2px solid rgba(99,102,241,0.15)',
-                  background: form.emoji === emoji ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.6)',
+                  border: form.emoji === emoji ? '2px solid #7A8F7B' : '2px solid rgba(122,143,123,0.15)',
+                  background: form.emoji === emoji ? 'rgba(122,143,123,0.08)' : 'rgba(255,255,255,0.6)',
                   transition: 'all 0.18s ease',
                   userSelect: 'none',
-                  '&:hover': { borderColor: '#6366F1', background: 'rgba(99,102,241,0.06)' },
-                  '&:focus-visible': { outline: '2px solid #6366F1', outlineOffset: 2 },
+                  '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.06)' },
+                  '&:focus-visible': { outline: '2px solid #7A8F7B', outlineOffset: 2 },
                 }}
               >
                 {emoji}
@@ -1093,7 +1093,7 @@ const ContactSection = memo(function ContactSection() {
           </Box>
 
           <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 700, mb: 1, fontSize: '0.82rem' }}>거주 지역 (선택)</Typography>
+            <Typography variant="body2" sx={{ color: '#6B7280', fontWeight: 700, mb: 1, fontSize: '0.82rem' }}>거주 지역 (선택)</Typography>
             <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
               {REGIONS.map((r) => (
                 <Box
@@ -1105,13 +1105,13 @@ const ContactSection = memo(function ContactSection() {
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setForm({ ...form, region: form.region === r ? '' : r }); } }}
                   sx={{
                     px: 1.5, py: 0.5, borderRadius: '999px',
-                    border: form.region === r ? '1.5px solid #6366F1' : '1.5px solid rgba(99,102,241,0.18)',
-                    background: form.region === r ? '#6366F1' : 'transparent',
-                    color: form.region === r ? '#FFFFFF' : '#64748B',
+                    border: form.region === r ? '1.5px solid #7A8F7B' : '1.5px solid rgba(122,143,123,0.18)',
+                    background: form.region === r ? '#7A8F7B' : 'transparent',
+                    color: form.region === r ? '#FFFFFF' : '#6B7280',
                     fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer', userSelect: 'none',
                     transition: 'all 0.18s ease',
-                    '&:hover': { borderColor: '#6366F1', color: form.region === r ? '#FFFFFF' : '#6366F1' },
-                    '&:focus-visible': { outline: '2px solid #6366F1', outlineOffset: 2 },
+                    '&:hover': { borderColor: '#7A8F7B', color: form.region === r ? '#FFFFFF' : '#7A8F7B' },
+                    '&:focus-visible': { outline: '2px solid #7A8F7B', outlineOffset: 2 },
                   }}
                 >
                   {r}
@@ -1146,9 +1146,9 @@ const ContactSection = memo(function ContactSection() {
               endIcon={submitting ? <CircularProgress size={15} sx={{ color: '#fff' }} /> : <SendIcon sx={{ fontSize: '1rem !important' }} />}
               sx={{
                 background: G, borderRadius: '12px', px: 4, fontWeight: 700,
-                boxShadow: '0 6px 20px rgba(99,102,241,0.3)',
-                '&:hover': { background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', boxShadow: '0 10px 28px rgba(99,102,241,0.4)' },
-                '&:disabled': { background: '#E2E8F0', color: '#94A3B8' },
+                boxShadow: '0 6px 20px rgba(122,143,123,0.3)',
+                '&:hover': { background: '#647566', boxShadow: '0 10px 28px rgba(122,143,123,0.4)' },
+                '&:disabled': { background: '#E8E3DB', color: '#9C9691' },
                 transition: 'all 0.25s ease',
               }}
             >
@@ -1160,10 +1160,10 @@ const ContactSection = memo(function ContactSection() {
         {/* Guestbook list */}
         {loadingGuests ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress sx={{ color: '#6366F1' }} />
+            <CircularProgress sx={{ color: '#7A8F7B' }} />
           </Box>
         ) : guestbook.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 6, color: '#94A3B8' }}>
+          <Box sx={{ textAlign: 'center', py: 6, color: '#9C9691' }}>
             <Typography variant="body2">아직 방명록이 없습니다. 첫 번째로 남겨주세요!</Typography>
           </Box>
         ) : (
@@ -1177,34 +1177,34 @@ const ContactSection = memo(function ContactSection() {
                   p: 3,
                   display: 'flex',
                   gap: 2,
-                  boxShadow: '0 2px 12px rgba(99,102,241,0.05)',
+                  boxShadow: '0 2px 12px rgba(122,143,123,0.05)',
                   transition: 'all 0.22s ease',
-                  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 28px rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.18)' },
+                  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 28px rgba(122,143,123,0.1)', border: '1px solid rgba(122,143,123,0.18)' },
                 }}
               >
-                <Box sx={{ width: 46, height: 46, borderRadius: '14px', background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+                <Box sx={{ width: 46, height: 46, borderRadius: '14px', background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
                   {entry.emoji || '👋'}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>{entry.name}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#2F2F2F' }}>{entry.name}</Typography>
                     {entry.company && (
                       <Box sx={{ px: 1, py: 0.15, borderRadius: '6px', background: G, color: '#FFF', fontSize: '0.68rem', fontWeight: 700 }}>{entry.company}</Box>
                     )}
                     {entry.region && (
-                      <Box sx={{ px: 1, py: 0.15, borderRadius: '6px', background: 'rgba(99,102,241,0.08)', color: '#6366F1', fontSize: '0.68rem', fontWeight: 600 }}>📍 {entry.region}</Box>
+                      <Box sx={{ px: 1, py: 0.15, borderRadius: '6px', background: 'rgba(122,143,123,0.08)', color: '#7A8F7B', fontSize: '0.68rem', fontWeight: 600 }}>📍 {entry.region}</Box>
                     )}
-                    <Typography variant="caption" sx={{ color: '#CBD5E1', ml: 'auto', fontSize: '0.72rem' }}>{formatDate(entry.created_at)}</Typography>
+                    <Typography variant="caption" sx={{ color: '#C9C2B8', ml: 'auto', fontSize: '0.72rem' }}>{formatDate(entry.created_at)}</Typography>
                     <IconButton
                       size="small"
                       onClick={() => handleDeleteOpen(entry)}
                       title="삭제"
-                      sx={{ color: '#CBD5E1', '&:hover': { color: '#EF4444', background: 'rgba(239,68,68,0.06)' }, borderRadius: '8px', flexShrink: 0 }}
+                      sx={{ color: '#C9C2B8', '&:hover': { color: '#EF4444', background: 'rgba(239,68,68,0.06)' }, borderRadius: '8px', flexShrink: 0 }}
                     >
                       <DeleteIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Box>
-                  <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.7, wordBreak: 'break-word' }}>{entry.message}</Typography>
+                  <Typography variant="body2" sx={{ color: '#4B4842', lineHeight: 1.7, wordBreak: 'break-word' }}>{entry.message}</Typography>
                 </Box>
               </Box>
             ))}
@@ -1221,9 +1221,9 @@ const ContactSection = memo(function ContactSection() {
 
       {/* Delete Dialog */}
       <Dialog open={deleteTarget !== null} onClose={handleDeleteClose} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', pb: 1 }}>방명록 삭제</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, color: '#2F2F2F', pb: 1 }}>방명록 삭제</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 2 }}>
+          <Typography variant="body2" sx={{ color: '#6B7280', mb: 2 }}>
             작성 시 입력한 비밀번호를 입력하면 삭제됩니다.
           </Typography>
           <TextField
@@ -1236,7 +1236,7 @@ const ContactSection = memo(function ContactSection() {
           {deleteError && <Alert severity="error" sx={{ mt: 1.5, borderRadius: '12px' }}>{deleteError}</Alert>}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-          <Button onClick={handleDeleteClose} sx={{ color: '#64748B', borderRadius: '10px' }}>취소</Button>
+          <Button onClick={handleDeleteClose} sx={{ color: '#6B7280', borderRadius: '10px' }}>취소</Button>
           <Button
             variant="contained"
             onClick={handleDeleteConfirm}

@@ -40,7 +40,7 @@ function Navbar() {
             fontWeight: 800,
             fontSize: '1.1rem',
             letterSpacing: '-0.02em',
-            background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
+            background: 'linear-gradient(135deg, #7A8F7B, #D9A273)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -52,7 +52,7 @@ function Navbar() {
 
         {isMobile ? (
           <>
-            <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: '#0F172A' }}>
+            <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: '#2F2F2F' }}>
               <MenuIcon />
             </IconButton>
             <Drawer
@@ -64,13 +64,13 @@ function Navbar() {
                   width: 260,
                   background: 'rgba(255,255,255,0.95)',
                   backdropFilter: 'blur(20px)',
-                  borderLeft: '1px solid rgba(99,102,241,0.1)',
+                  borderLeft: '1px solid rgba(122,143,123,0.1)',
                   pt: 2,
                 },
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, mb: 1 }}>
-                <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: '#64748B' }}>
+                <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: '#6B7280' }}>
                   <CloseIcon />
                 </IconButton>
               </Box>
@@ -85,15 +85,15 @@ function Navbar() {
                         onClick={() => setDrawerOpen(false)}
                         sx={{
                           borderRadius: '12px',
-                          background: active ? 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1))' : 'transparent',
-                          '&:hover': { background: 'rgba(99,102,241,0.06)' },
+                          background: active ? 'linear-gradient(135deg, rgba(122,143,123,0.1), rgba(217,162,115,0.1))' : 'transparent',
+                          '&:hover': { background: 'rgba(122,143,123,0.06)' },
                         }}
                       >
                         <ListItemText
                           primary={label}
                           primaryTypographyProps={{
                             fontWeight: active ? 700 : 500,
-                            color: active ? '#6366F1' : '#475569',
+                            color: active ? '#7A8F7B' : '#4B4842',
                             fontSize: '0.95rem',
                           }}
                         />
@@ -119,13 +119,13 @@ function Navbar() {
                     borderRadius: '10px',
                     fontSize: '0.9rem',
                     fontWeight: active ? 700 : 500,
-                    color: active ? '#6366F1' : '#64748B',
-                    background: active ? 'rgba(99,102,241,0.08)' : 'transparent',
+                    color: active ? '#7A8F7B' : '#6B7280',
+                    background: active ? 'rgba(122,143,123,0.08)' : 'transparent',
                     textDecoration: 'none',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      color: '#6366F1',
-                      background: 'rgba(99,102,241,0.06)',
+                      color: '#7A8F7B',
+                      background: 'rgba(122,143,123,0.06)',
                     },
                   }}
                 >

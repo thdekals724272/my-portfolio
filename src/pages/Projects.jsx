@@ -10,7 +10,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { supabase } from '../lib/supabase';
 
-const G = 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)';
+const G = '#7A8F7B';
 const GLASS = {
   background: 'rgba(255,255,255,0.75)',
   backdropFilter: 'blur(20px)',
@@ -19,13 +19,13 @@ const GLASS = {
 };
 
 const TECH_COLORS = {
-  React: '#0EA5E9',
+  React: '#C17F59',
   Supabase: '#10B981',
-  PostgreSQL: '#3B82F6',
-  MUI: '#6366F1',
-  CSS3: '#8B5CF6',
+  PostgreSQL: '#8B7355',
+  MUI: '#7A8F7B',
+  CSS3: '#D9A273',
   Recharts: '#F59E0B',
-  'Unsplash API': '#0F172A',
+  'Unsplash API': '#2F2F2F',
 };
 
 function FadeIn({ children, delay = 0 }) {
@@ -57,11 +57,11 @@ function ProjectCard({ project, index }) {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 4px 24px rgba(99,102,241,0.07)',
+          boxShadow: '0 4px 24px rgba(122,143,123,0.07)',
           transition: 'transform 0.3s ease, box-shadow 0.3s ease',
           '&:hover': {
             transform: 'translateY(-8px) scale(1.01)',
-            boxShadow: '0 24px 56px rgba(99,102,241,0.18)',
+            boxShadow: '0 24px 56px rgba(122,143,123,0.18)',
           },
           height: '100%',
         }}
@@ -72,7 +72,7 @@ function ProjectCard({ project, index }) {
             position: 'relative',
             width: '100%',
             aspectRatio: '16/9',
-            backgroundColor: '#F1F5F9',
+            backgroundColor: '#EFEAE3',
             overflow: 'hidden',
           }}
         >
@@ -83,10 +83,10 @@ function ProjectCard({ project, index }) {
                   sx={{
                     position: 'absolute', inset: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #EEF2FF, #F3E8FF)',
+                    background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)',
                   }}
                 >
-                  <CircularProgress size={24} sx={{ color: '#6366F1' }} />
+                  <CircularProgress size={24} sx={{ color: '#7A8F7B' }} />
                 </Box>
               )}
               <Box
@@ -120,10 +120,10 @@ function ProjectCard({ project, index }) {
 
         {/* Body */}
         <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', flex: 1 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.5, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
             {project.title}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', lineHeight: 1.75, mb: 2.5, flex: 1, fontSize: '0.84rem' }}>
+          <Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.75, mb: 2.5, flex: 1, fontSize: '0.84rem' }}>
             {project.description}
           </Typography>
 
@@ -135,9 +135,9 @@ function ProjectCard({ project, index }) {
                 size="small"
                 sx={{
                   fontSize: '0.68rem', fontWeight: 700, height: 22, borderRadius: '8px',
-                  backgroundColor: `${TECH_COLORS[tech] || '#6366F1'}15`,
-                  color: TECH_COLORS[tech] || '#6366F1',
-                  border: `1px solid ${TECH_COLORS[tech] || '#6366F1'}30`,
+                  backgroundColor: `${TECH_COLORS[tech] || '#7A8F7B'}15`,
+                  color: TECH_COLORS[tech] || '#7A8F7B',
+                  border: `1px solid ${TECH_COLORS[tech] || '#7A8F7B'}30`,
                 }}
               />
             ))}
@@ -156,8 +156,8 @@ function ProjectCard({ project, index }) {
                 sx={{
                   flex: 1, background: G, fontWeight: 700, fontSize: '0.74rem',
                   borderRadius: '10px', py: 0.9,
-                  boxShadow: '0 4px 14px rgba(99,102,241,0.3)',
-                  '&:hover': { background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', transform: 'translateY(-1px)', boxShadow: '0 8px 22px rgba(99,102,241,0.38)' },
+                  boxShadow: '0 4px 14px rgba(122,143,123,0.3)',
+                  '&:hover': { background: '#647566', transform: 'translateY(-1px)', boxShadow: '0 8px 22px rgba(122,143,123,0.38)' },
                   transition: 'all 0.22s ease',
                 }}
               >
@@ -173,9 +173,9 @@ function ProjectCard({ project, index }) {
               startIcon={<GitHubIcon sx={{ fontSize: '0.9rem !important' }} />}
               onClick={(e) => e.stopPropagation()}
               sx={{
-                flex: 1, borderColor: 'rgba(99,102,241,0.25)', color: '#6366F1',
+                flex: 1, borderColor: 'rgba(122,143,123,0.25)', color: '#7A8F7B',
                 fontWeight: 700, fontSize: '0.74rem', borderRadius: '10px', py: 0.9,
-                '&:hover': { borderColor: '#6366F1', background: 'rgba(99,102,241,0.05)', transform: 'translateY(-1px)' },
+                '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.05)', transform: 'translateY(-1px)' },
                 transition: 'all 0.22s ease',
               }}
             >
@@ -205,20 +205,20 @@ function Projects() {
   }, []);
 
   return (
-    <Box component="main" sx={{ minHeight: 'calc(100vh - 64px)', background: '#F8FAFF' }}>
+    <Box component="main" sx={{ minHeight: 'calc(100vh - 64px)', background: '#FAF8F5' }}>
       {/* Hero header */}
       <Box
         sx={{
           position: 'relative',
-          background: 'linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 55%, #F3E8FF 100%)',
+          background: 'linear-gradient(135deg, #FBF6F0 0%, #FDF9F3 55%, #F7EFE6 100%)',
           py: { xs: 8, md: 12 },
           textAlign: 'center',
           overflow: 'hidden',
         }}
       >
         {[
-          { size: 500, color: 'rgba(99,102,241,0.14)', top: -180, right: -80 },
-          { size: 360, color: 'rgba(139,92,246,0.10)', bottom: -80, left: -60 },
+          { size: 500, color: 'rgba(122,143,123,0.14)', top: -180, right: -80 },
+          { size: 360, color: 'rgba(217,162,115,0.10)', bottom: -80, left: -60 },
         ].map((orb, i) => (
           <Box
             key={i}
@@ -235,8 +235,8 @@ function Projects() {
           <Box
             sx={{
               display: 'inline-block', px: 2, py: 0.6, mb: 2.5, borderRadius: '999px',
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1))',
-              border: '1px solid rgba(99,102,241,0.2)', color: '#6366F1',
+              background: 'linear-gradient(135deg, rgba(122,143,123,0.1), rgba(217,162,115,0.1))',
+              border: '1px solid rgba(122,143,123,0.2)', color: '#7A8F7B',
               fontSize: '0.7rem', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
             }}
           >
@@ -246,14 +246,14 @@ function Projects() {
             variant="h2"
             sx={{
               fontWeight: 800, mb: 2,
-              background: 'linear-gradient(135deg, #1E1B4B 0%, #6366F1 50%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #4A4238 0%, #7A8F7B 50%, #D9A273 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
               fontSize: { xs: '2rem', md: '3rem' }, letterSpacing: '-0.03em', lineHeight: 1.2,
             }}
           >
             대표 프로젝트
           </Typography>
-          <Typography variant="body1" sx={{ color: '#64748B', lineHeight: 1.8, maxWidth: 480, mx: 'auto' }}>
+          <Typography variant="body1" sx={{ color: '#6B7280', lineHeight: 1.8, maxWidth: 480, mx: 'auto' }}>
             바이브코딩으로 만든 프로젝트들을 소개합니다.
           </Typography>
         </Container>
@@ -263,11 +263,11 @@ function Projects() {
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-            <CircularProgress sx={{ color: '#6366F1' }} />
+            <CircularProgress sx={{ color: '#7A8F7B' }} />
           </Box>
         ) : projects.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 12 }}>
-            <Typography variant="body1" sx={{ color: '#94A3B8' }}>등록된 프로젝트가 없습니다.</Typography>
+            <Typography variant="body1" sx={{ color: '#9C9691' }}>등록된 프로젝트가 없습니다.</Typography>
           </Box>
         ) : (
           <Box

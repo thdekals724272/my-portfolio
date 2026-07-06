@@ -2,12 +2,12 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#6366F1', light: '#818CF8', dark: '#4F46E5', contrastText: '#FFFFFF' },
-    secondary: { main: '#8B5CF6', contrastText: '#FFFFFF' },
-    info: { main: '#06B6D4' },
-    background: { default: '#F8FAFF', paper: '#FFFFFF' },
-    text: { primary: '#0F172A', secondary: '#64748B', disabled: '#94A3B8' },
-    divider: '#E2E8F0',
+    primary: { main: '#7A8F7B', light: '#96AC97', dark: '#647566', contrastText: '#FFFFFF' },
+    secondary: { main: '#D9A273', contrastText: '#FFFFFF' },
+    info: { main: '#C97B63' },
+    background: { default: '#FAF8F5', paper: '#FFFFFF' },
+    text: { primary: '#2F2F2F', secondary: '#6B7280', disabled: '#9C9691' },
+    divider: '#E8E3DB',
   },
   typography: {
     fontFamily: "'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -20,7 +20,7 @@ const theme = createTheme({
     body1: { lineHeight: 1.8 },
     body2: { lineHeight: 1.7 },
   },
-  shape: { borderRadius: 16 },
+  shape: { borderRadius: 20 },
   components: {
     MuiButton: {
       styleOverrides: {
@@ -38,8 +38,8 @@ const theme = createTheme({
           backgroundColor: 'rgba(255,255,255,0.85)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          boxShadow: '0 1px 0 rgba(99,102,241,0.08)',
-          color: '#0F172A',
+          boxShadow: '0 1px 0 rgba(122,143,123,0.08)',
+          color: '#2F2F2F',
         },
       },
     },
@@ -48,10 +48,10 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: '12px',
-            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#7A8F7B' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7A8F7B' },
           },
-          '& .MuiInputLabel-root.Mui-focused': { color: '#6366F1' },
+          '& .MuiInputLabel-root.Mui-focused': { color: '#7A8F7B' },
         },
       },
     },
@@ -59,7 +59,7 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: '24px',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.12)',
+          boxShadow: '0 20px 56px rgba(47,47,47,0.10)',
         },
       },
     },
