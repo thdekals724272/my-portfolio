@@ -19,7 +19,7 @@ import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import EmailIcon from '@mui/icons-material/Email';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import GitHubIcon from '@mui/icons-material/GitHub';
@@ -246,6 +246,7 @@ const HeroSection = memo(function HeroSection() {
 
   return (
     <Box
+      id="home-hero"
       component="section"
       aria-label="소개 섹션"
       sx={{
@@ -961,7 +962,7 @@ const ContactSection = memo(function ContactSection() {
   };
 
   return (
-    <Box component="section" sx={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #FFFFFF 100%)', py: { xs: 8, md: 12 } }}>
+    <Box id="home-contact" component="section" sx={{ background: 'linear-gradient(180deg, #FAF8F5 0%, #FFFFFF 100%)', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md">
 
         {/* Header */}
@@ -1253,6 +1254,18 @@ const ContactSection = memo(function ContactSection() {
 
 // ─── Home Page ────────────────────────────────────────────────
 function Home() {
+  const location = useLocation();
+
+  // 다른 페이지(About Me/Projects)에서 네비게이션의 "Contact"를 눌러 이동해온 경우,
+  // 마운트 후 Contact 섹션으로 스크롤 이동
+  useEffect(() => {
+    const targetId = location.state?.scrollTo;
+    if (!targetId) return;
+    requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [location.state]);
+
   return (
     <main>
       <HeroSection />
