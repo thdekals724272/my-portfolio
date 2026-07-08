@@ -952,15 +952,22 @@ const HomeProjectCard = memo(function HomeProjectCard({ project, index }) {
           willChange: 'transform, box-shadow',
           transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease',
           '@media (hover: hover) and (pointer: fine)': {
-            '&:hover': { transform: 'translateY(-8px) scale(1.015)', boxShadow: '0 22px 52px rgba(122,143,123,0.18)' },
+            '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 20px 44px rgba(122,143,123,0.16)' },
           },
+          '&:focus-within': { transform: 'translateY(-4px)', boxShadow: '0 20px 44px rgba(122,143,123,0.16)' },
         }}
       >
         <Box
           ref={ref}
           {...handlers}
           className="zoom-trigger"
-          sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#EFEAE3', overflow: 'hidden', cursor: 'pointer' }}
+          tabIndex={0}
+          role="group"
+          aria-label={`${project.title} 미리보기`}
+          sx={{
+            position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#EFEAE3', overflow: 'hidden', cursor: 'pointer',
+            '&:focus-visible': { outline: '2px solid #7A8F7B', outlineOffset: '-2px' },
+          }}
         >
           {!imgError && project.thumbnail_url ? (
             <>
