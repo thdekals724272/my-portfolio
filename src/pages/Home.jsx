@@ -3,6 +3,8 @@ import { keyframes } from '@emotion/react';
 import { useHoverActive } from '../hooks/useHoverActive';
 import { useScrollParallax } from '../hooks/useScrollParallax';
 import { useMouseParallax } from '../hooks/useMouseParallax';
+import { useThumbnail } from '../hooks/useThumbnail';
+import ProjectThumbnailFallback from '../components/ProjectThumbnailFallback';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useTiltEffect } from '../hooks/useTiltEffect';
 import { usePortfolio } from '../context/PortfolioContext';
@@ -988,8 +990,7 @@ const SkillSection = memo(function SkillSection() {
 
 // ─── Projects ─────────────────────────────────────────────────
 const HomeProjectCard = memo(function HomeProjectCard({ project, index }) {
-  const [imgError, setImgError] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const { src: thumbSrc, state: thumbState, handleLoad, handleError } = useThumbnail(project.thumbnail_url);
   const { ref, active, handlers } = useHoverActive();
 
   return (
@@ -1022,27 +1023,25 @@ const HomeProjectCard = memo(function HomeProjectCard({ project, index }) {
             '&:focus-visible': { outline: '2px solid #7A8F7B', outlineOffset: '-2px' },
           }}
         >
-          {!imgError && project.thumbnail_url ? (
+          {thumbState === 'error' ? (
+            <ProjectThumbnailFallback title={project.title} />
+          ) : (
             <>
-              {!imgLoaded && (
+              {thumbState === 'loading' && (
                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)' }}>
                   <LoadingSpinner size={7} py={0} />
                 </Box>
               )}
               <Box
                 component="img"
-                src={project.thumbnail_url}
+                src={thumbSrc}
                 alt={project.title}
                 loading="lazy"
-                onLoad={() => setImgLoaded(true)}
-                onError={() => setImgError(true)}
-                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: imgLoaded ? 'block' : 'none', ...imageZoomSx(active) }}
+                onLoad={handleLoad}
+                onError={handleError}
+                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: thumbState === 'loaded' ? 'block' : 'none', ...imageZoomSx(active) }}
               />
             </>
-          ) : (
-            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: G }}>
-              <Box sx={{ width: 40, height: 40, borderRadius: 2, background: 'rgba(255,255,255,0.25)' }} />
-            </Box>
           )}
           {/* 이미지 오버레이 정보 — 데스크톱 hover / 모바일 tap 시 노출 */}
           <Box sx={imageOverlaySx(active)}>

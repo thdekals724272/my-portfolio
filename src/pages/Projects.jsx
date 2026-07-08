@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useHoverActive } from '../hooks/useHoverActive';
+import { useThumbnail } from '../hooks/useThumbnail';
 import { gradientButtonSx, outlineButtonSx, imageZoomSx, imageOverlaySx } from '../styles/interactions';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ProjectCardSkeletonGrid } from '../components/ProjectCardSkeleton';
+import ProjectThumbnailFallback from '../components/ProjectThumbnailFallback';
 import ScrollReveal from '../components/ScrollReveal';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -68,8 +70,7 @@ function ProjectStoryRows({ story, compact = false }) {
 }
 
 function ProjectCard({ project, index }) {
-  const [imgError, setImgError] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const { src: thumbSrc, state: thumbState, handleLoad, handleError } = useThumbnail(project.thumbnail_url);
   const { ref, active, handlers } = useHoverActive();
   const story = PROJECT_STORY[project.title];
 
@@ -105,9 +106,11 @@ function ProjectCard({ project, index }) {
             cursor: 'pointer',
           }}
         >
-          {!imgError && project.thumbnail_url ? (
+          {thumbState === 'error' ? (
+            <ProjectThumbnailFallback title={project.title} />
+          ) : (
             <>
-              {!imgLoaded && (
+              {thumbState === 'loading' && (
                 <Box
                   sx={{
                     position: 'absolute', inset: 0,
@@ -120,29 +123,18 @@ function ProjectCard({ project, index }) {
               )}
               <Box
                 component="img"
-                src={project.thumbnail_url}
+                src={thumbSrc}
                 alt={project.title}
                 loading="lazy"
-                onLoad={() => setImgLoaded(true)}
-                onError={() => setImgError(true)}
+                onLoad={handleLoad}
+                onError={handleError}
                 sx={{
                   width: '100%', height: '100%', objectFit: 'cover',
-                  display: imgLoaded ? 'block' : 'none',
+                  display: thumbState === 'loaded' ? 'block' : 'none',
                   ...imageZoomSx(active),
                 }}
               />
             </>
-          ) : (
-            <Box
-              sx={{
-                width: '100%', height: '100%',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                background: G, gap: 1,
-              }}
-            >
-              <Box sx={{ width: 40, height: 40, borderRadius: '14px', background: 'rgba(255,255,255,0.25)' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.68rem' }}>Preview unavailable</Typography>
-            </Box>
           )}
           {/* 이미지 오버레이 정보 — 데스크톱 hover / 모바일 tap 시 노출 */}
           <Box sx={imageOverlaySx(active)}>
@@ -230,8 +222,7 @@ function ProjectCard({ project, index }) {
 
 // 첫 번째 프로젝트를 크게 보여주는 Featured 카드 — 데스크톱은 썸네일+정보 좌우 배치, 모바일은 세로 스택
 function FeaturedProjectCard({ project }) {
-  const [imgError, setImgError] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const { src: thumbSrc, state: thumbState, handleLoad, handleError } = useThumbnail(project.thumbnail_url);
   const { ref, active, handlers } = useHoverActive();
   const story = PROJECT_STORY[project.title];
 
@@ -268,32 +259,29 @@ function FeaturedProjectCard({ project }) {
             flexShrink: 0,
           }}
         >
-          {!imgError && project.thumbnail_url ? (
+          {thumbState === 'error' ? (
+            <ProjectThumbnailFallback title={project.title} />
+          ) : (
             <>
-              {!imgLoaded && (
+              {thumbState === 'loading' && (
                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)' }}>
                   <LoadingSpinner size={8} py={0} />
                 </Box>
               )}
               <Box
                 component="img"
-                src={project.thumbnail_url}
+                src={thumbSrc}
                 alt={project.title}
                 loading="lazy"
-                onLoad={() => setImgLoaded(true)}
-                onError={() => setImgError(true)}
+                onLoad={handleLoad}
+                onError={handleError}
                 sx={{
                   width: '100%', height: '100%', objectFit: 'cover',
-                  display: imgLoaded ? 'block' : 'none',
+                  display: thumbState === 'loaded' ? 'block' : 'none',
                   ...imageZoomSx(active),
                 }}
               />
             </>
-          ) : (
-            <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: G, gap: 1 }}>
-              <Box sx={{ width: 44, height: 44, borderRadius: '14px', background: 'rgba(255,255,255,0.25)' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem' }}>Preview unavailable</Typography>
-            </Box>
           )}
           <Box sx={imageOverlaySx(active)}>
             <Typography sx={{ color: '#FFF', fontWeight: 800, fontSize: '0.92rem', letterSpacing: '-0.01em' }}>{project.title}</Typography>
