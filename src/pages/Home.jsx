@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { keyframes } from '@emotion/react';
 import { useHoverActive } from '../hooks/useHoverActive';
 import { useScrollParallax } from '../hooks/useScrollParallax';
+import { useMouseParallax } from '../hooks/useMouseParallax';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useTiltEffect } from '../hooks/useTiltEffect';
 import { usePortfolio } from '../context/PortfolioContext';
@@ -113,6 +114,11 @@ const bounceKeyframes = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.55; }
   50% { transform: translateY(8px); opacity: 1; }
 `;
+// 카드류에 쓰는 아주 은은한 idle floating (배경 오브젝트보다 훨씬 작은 진폭)
+const floatGentle = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+`;
 const caretBlink = keyframes`
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -163,6 +169,26 @@ function HeroCardGlow() {
         width: 420, height: 420, borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(217,162,115,0.22) 0%, rgba(122,143,123,0.14) 55%, transparent 75%)',
         pointerEvents: 'none', zIndex: 0,
+      }}
+    />
+  );
+}
+
+// ─── Hero 배경 전체에 깔리는 Interactive Glow ───────────────────
+// 커서를 그대로 따라가는 게 아니라, Hero 루트에 쌓인 --mx/--my 값을 아주 약하게 반영해
+// "배경의 빛이 은은하게 반응하는" 느낌만 준다 (커서 자체를 따라다니는 CursorFollower와는 별개).
+function HeroAmbientGlow() {
+  return (
+    <Box
+      aria-hidden="true"
+      sx={{
+        position: 'absolute', top: '30%', left: '50%',
+        width: 720, height: 720, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(217,162,115,0.16) 0%, rgba(122,143,123,0.1) 45%, transparent 72%)',
+        transform: 'translate3d(calc(-50% + var(--mx, 0) * 26px), calc(-50% + var(--my, 0) * 26px), 0)',
+        willChange: 'transform',
+        pointerEvents: 'none', zIndex: 0,
+        '@media (prefers-reduced-motion: reduce)': { transform: 'translate3d(-50%, -50%, 0)' },
       }}
     />
   );
@@ -319,26 +345,28 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
         만든 프로젝트
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2 }}>
-        {HERO_MINI_PROJECTS.map((p) => (
-          <Box
-            key={p.name}
-            component={Link}
-            to="/projects"
-            sx={{
-              display: 'block', textDecoration: 'none', minHeight: 44,
-              p: 1.4, borderRadius: '14px',
-              background: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(122,143,123,0.1)',
-              transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-              '&:hover': { transform: 'scale(1.03)', boxShadow: '0 8px 20px rgba(122,143,123,0.15)', border: '1px solid rgba(122,143,123,0.25)' },
-            }}
-          >
-            <Typography variant="body2" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: '0.85rem' }}>
-              {p.name}
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#6B7280', fontSize: '0.72rem' }}>
-              {p.desc}
-            </Typography>
+        {HERO_MINI_PROJECTS.map((p, i) => (
+          // 바깥: 은은한 idle floating(항목마다 다른 속도) / 안쪽: 기존 hover 동작 그대로 유지
+          <Box key={p.name} sx={{ animation: `${floatGentle} ${6.5 + i * 1.5}s ease-in-out infinite`, animationDelay: `${i * 0.4}s`, ...reduceMotion }}>
+            <Box
+              component={Link}
+              to="/projects"
+              sx={{
+                display: 'block', textDecoration: 'none', minHeight: 44,
+                p: 1.4, borderRadius: '14px',
+                background: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(122,143,123,0.1)',
+                transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                '&:hover': { transform: 'scale(1.03)', boxShadow: '0 8px 20px rgba(122,143,123,0.15)', border: '1px solid rgba(122,143,123,0.25)' },
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: '0.85rem' }}>
+                {p.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#6B7280', fontSize: '0.72rem' }}>
+                {p.desc}
+              </Typography>
+            </Box>
           </Box>
         ))}
       </Box>
@@ -349,9 +377,9 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
 // ─── Hero ─────────────────────────────────────────────────────
 // 아주 천천히(15~20s) 떠다니도록 기존보다 느린 duration 적용
 const HERO_ORBS = [
-  { size: 620, color: 'rgba(122,143,123,0.18)', top: -200, right: -140, anim: floatSlow, dur: '17s', parallax: 0.12 },
-  { size: 460, color: 'rgba(216,140,122,0.16)', bottom: -140, left: -100, anim: floatMed, dur: '20s', parallax: -0.08 },
-  { size: 320, color: 'rgba(217,162,115,0.14)', top: '30%', left: '4%', anim: floatFast, dur: '15s', parallax: 0.18 },
+  { size: 620, color: 'rgba(122,143,123,0.18)', top: -200, right: -140, anim: floatSlow, dur: '17s', parallax: 0.12, depth: 10 },
+  { size: 460, color: 'rgba(216,140,122,0.16)', bottom: -140, left: -100, anim: floatMed, dur: '20s', parallax: -0.08, depth: 14 },
+  { size: 320, color: 'rgba(217,162,115,0.14)', top: '30%', left: '4%', anim: floatFast, dur: '15s', parallax: 0.18, depth: 8 },
 ];
 
 // 작은 원형 오브젝트 — 세이지/테라코타/베이지 톤의 미세한 점, 아주 은은하게 floating
@@ -367,8 +395,8 @@ const HERO_MICRO_DOTS = [
 const HERO_NOISE_SVG = `<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`;
 const HERO_NOISE_BG = `url("data:image/svg+xml,${encodeURIComponent(HERO_NOISE_SVG)}")`;
 
-// 배경 오브젝트 하나 — 바깥 요소는 스크롤 패럴렉스(translate3d)만, 안쪽 요소는 은은한 floating 애니메이션만 담당한다.
-// (두 transform 을 같은 엘리먼트에 두면 CSS 애니메이션이 인라인 transform 을 덮어써 패럴렉스가 씹히므로 분리)
+// 배경 오브젝트 하나 — 세 겹으로 분리해 각 transform 이 서로 덮어쓰지 않게 한다.
+// 바깥: 스크롤 패럴렉스 / 중간: 마우스 패럴렉스(깊이감) / 안쪽: 은은한 floating 애니메이션
 function ParallaxOrb({ orb, size }) {
   const ref = useScrollParallax(orb.parallax);
   return (
@@ -385,12 +413,21 @@ function ParallaxOrb({ orb, size }) {
     >
       <Box
         sx={{
-          width: '100%', height: '100%', borderRadius: '50%',
-          background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
-          animation: `${orb.anim} ${orb.dur} ease-in-out infinite`,
-          ...reduceMotion,
+          width: '100%', height: '100%',
+          transform: `translate3d(calc(var(--mx, 0) * ${orb.depth}px), calc(var(--my, 0) * ${orb.depth}px), 0)`,
+          willChange: 'transform',
+          '@media (prefers-reduced-motion: reduce)': { transform: 'none' },
         }}
-      />
+      >
+        <Box
+          sx={{
+            width: '100%', height: '100%', borderRadius: '50%',
+            background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
+            animation: `${orb.anim} ${orb.dur} ease-in-out infinite`,
+            ...reduceMotion,
+          }}
+        />
+      </Box>
     </Box>
   );
 }
@@ -434,12 +471,14 @@ const HeroSection = memo(function HeroSection() {
   // 모바일에서는 배경 오브젝트 개수/크기를 줄여 과하지 않게 처리
   const orbs = isMobile ? HERO_ORBS.slice(0, 2) : HERO_ORBS;
   const microDotCount = isMobile ? 2 : isTablet ? 3 : HERO_MICRO_DOTS.length;
+  const mouseParallaxRef = useMouseParallax();
 
   return (
     <Box
       id="home-hero"
       component="section"
       aria-label="소개 섹션"
+      ref={mouseParallaxRef}
       sx={{
         position: 'relative',
         overflow: 'hidden',
@@ -455,6 +494,9 @@ const HeroSection = memo(function HeroSection() {
         pb: isMobile ? 8 : isTablet ? 9 : 12,
       }}
     >
+      {/* Interactive Background Glow — 마우스 위치에 아주 은은하게 반응 (데스크톱만) */}
+      {!isMobile && <HeroAmbientGlow />}
+
       {/* Soft Noise — 아주 옅은 그레인 텍스처로 따뜻한 질감 부여 */}
       <Box
         aria-hidden="true"
@@ -656,7 +698,18 @@ const HeroSection = memo(function HeroSection() {
                     <HeroMiniIcons />
                   </>
                 )}
-                <ProductBuilderCard basicInfo={basicInfo} compact={isTablet} />
+                {/* 마우스 패럴렉스(깊이감) + 아주 은은한 idle floating — 각각 별도 레이어로 분리 */}
+                <Box
+                  sx={{
+                    transform: 'translate3d(calc(var(--mx, 0) * 7px), calc(var(--my, 0) * 7px), 0)',
+                    willChange: 'transform',
+                    '@media (prefers-reduced-motion: reduce)': { transform: 'none' },
+                  }}
+                >
+                  <Box sx={{ animation: `${floatGentle} 7s ease-in-out infinite`, ...reduceMotion }}>
+                    <ProductBuilderCard basicInfo={basicInfo} compact={isTablet} />
+                  </Box>
+                </Box>
               </Box>
             </FadeInMount>
           </Box>
