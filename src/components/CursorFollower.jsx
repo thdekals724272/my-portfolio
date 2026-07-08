@@ -81,8 +81,9 @@ function CursorFollower() {
 
     let raf = requestAnimationFrame(function tick() {
       // 위치와 스케일 모두 lerp로 부드럽게 목표값을 뒤쫓아간다 (60fps, GPU 가속 transform)
-      follower.x += (pointer.x - follower.x) * 0.18;
-      follower.y += (pointer.y - follower.y) * 0.18;
+      // 계수가 클수록 한 프레임에 목표값에 더 가깝게 붙는다 — 빠른 마우스 이동에도 커서를 놓치지 않도록 높게 유지
+      follower.x += (pointer.x - follower.x) * 0.42;
+      follower.y += (pointer.y - follower.y) * 0.42;
       scale += (targetScale - scale) * 0.22;
       el.style.transform = `translate3d(${follower.x}px, ${follower.y}px, 0) translate(-50%, -50%) scale(${scale})`;
       raf = requestAnimationFrame(tick);
