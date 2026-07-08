@@ -32,6 +32,14 @@ const theme = createTheme({
         },
       },
     },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          // 리플이 배경 위에서 은은하게 보이도록 보정
+          '& .MuiTouchRipple-child': { opacity: 0.65 },
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {

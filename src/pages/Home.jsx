@@ -1,7 +1,15 @@
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { keyframes } from '@emotion/react';
-import { useInView } from '../hooks/useInView';
+import { useHoverActive } from '../hooks/useHoverActive';
+import { useScrollParallax } from '../hooks/useScrollParallax';
+import { useTypewriter } from '../hooks/useTypewriter';
+import { useTiltEffect } from '../hooks/useTiltEffect';
 import { usePortfolio } from '../context/PortfolioContext';
+import { gradientButtonSx, outlineButtonSx, imageZoomSx, imageOverlaySx, logoHoverSx, iconGlowSx } from '../styles/interactions';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { ProjectCardSkeletonGrid } from '../components/ProjectCardSkeleton';
+import ScrollReveal from '../components/ScrollReveal';
+import MorphingHeadline from '../components/MorphingHeadline';
 import { ICON_EMOJI, CATEGORY_META } from '../data/skillsData';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -30,6 +38,11 @@ import CheckIcon from '@mui/icons-material/Check';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import LightbulbRoundedIcon from '@mui/icons-material/LightbulbRounded';
+import RocketLaunchRoundedIcon from '@mui/icons-material/RocketLaunchRounded';
+import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
+import LanguageRoundedIcon from '@mui/icons-material/LanguageRounded';
+import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -59,12 +72,24 @@ const TECH_COLORS = {
   Recharts: '#F59E0B',
   'AI-Assisted': '#D9A273',
   'UI/UX': '#D88C7A',
+  'Startup Founder': '#C97B63',
 };
 
-const HERO_BADGES = ['AI-Assisted', 'React', 'Supabase', 'UI/UX'];
+const HERO_BADGES = ['AI-Assisted', 'Startup Founder', 'React', 'Supabase'];
 const HERO_MINI_PROJECTS = [
   { name: 'Export Connect', desc: '중고차 수출 정보 공유 플랫폼' },
   { name: 'Wedding SNS', desc: '결혼 준비를 기록하는 SNS' },
+];
+const HERO_ROLE_WORDS = ['Product Builder', 'Service Planner', 'AI-Assisted Maker', 'Startup Founder'];
+const HERO_MORPH_PHRASES = ['가르치던 사람에서', '기획하는 사람으로,', '만드는 사람으로,'];
+
+// Hero 우측 카드 주변을 떠다니는 미니 아이콘 배지 (전구/로켓/AI/브라우저/코드)
+const HERO_MINI_ICONS = [
+  { Icon: LightbulbRoundedIcon, color: '#D9A273', anim: 'floatSlow', dur: '9s', pos: { top: -22, left: -30 } },
+  { Icon: RocketLaunchRoundedIcon, color: '#D88C7A', anim: 'floatMed', dur: '11s', pos: { top: '40%', right: -38 } },
+  { Icon: SmartToyRoundedIcon, color: '#7A8F7B', anim: 'floatFast', dur: '7.5s', pos: { bottom: -20, right: 46 } },
+  { Icon: LanguageRoundedIcon, color: '#C99A3E', anim: 'floatMed', dur: '10s', pos: { bottom: '20%', left: -42 } },
+  { Icon: CodeRoundedIcon, color: '#8B7355', anim: 'floatFast', dur: '8.5s', pos: { top: -30, right: '32%' } },
 ];
 
 // ─── Hero 배경/등장 애니메이션 키프레임 ──────────────────────────
@@ -88,7 +113,17 @@ const bounceKeyframes = keyframes`
   0%, 100% { transform: translateY(0); opacity: 0.55; }
   50% { transform: translateY(8px); opacity: 1; }
 `;
+const caretBlink = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+`;
+const gradientShift = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
 const reduceMotion = { '@media (prefers-reduced-motion: reduce)': { animation: 'none' } };
+const FLOAT_KEYFRAMES = { floatSlow, floatMed, floatFast };
 
 const sectionLabel = {
   display: 'inline-block',
@@ -102,24 +137,6 @@ const sectionLabel = {
   letterSpacing: 1.5,
   textTransform: 'uppercase',
 };
-
-// ─── FadeIn ──────────────────────────────────────────────────
-function FadeIn({ children, delay = 0, direction = 'up' }) {
-  const [ref, inView] = useInView();
-  const translate = direction === 'up' ? 'translateY(24px)' : 'translateY(-12px)';
-  return (
-    <Box
-      ref={ref}
-      sx={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? 'translateY(0)' : translate,
-        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
 
 function SectionDivider() {
   return (
@@ -136,20 +153,131 @@ function FadeInMount({ children, delay = 0 }) {
   );
 }
 
-// ─── Hero 우측 Product Builder 카드 ─────────────────────────────
-function ProductBuilderCard({ basicInfo, compact = false }) {
+// ─── Hero 우측 배경 글로우 ────────────────────────────────────
+function HeroCardGlow() {
   return (
     <Box
+      aria-hidden="true"
+      sx={{
+        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 420, height: 420, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(217,162,115,0.22) 0%, rgba(122,143,123,0.14) 55%, transparent 75%)',
+        pointerEvents: 'none', zIndex: 0,
+      }}
+    />
+  );
+}
+
+// ───노트북/웹사이트 화면 Mockup (실제 이미지 없이 CSS 와이어프레임으로 표현) ───
+function HeroBrowserMockup() {
+  return (
+    <Box
+      aria-hidden="true"
+      sx={{
+        position: 'absolute', top: -56, right: -34, width: 200,
+        borderRadius: '14px', overflow: 'hidden',
+        background: 'rgba(255,255,255,0.55)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.6)',
+        boxShadow: '0 20px 45px rgba(122,143,123,0.18)',
+        transform: 'rotate(-6deg)',
+        animation: `${floatMed} 10s ease-in-out infinite`,
+        zIndex: 1, pointerEvents: 'none',
+        ...reduceMotion,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, px: 1.2, py: 0.9, borderBottom: '1px solid rgba(122,143,123,0.12)' }}>
+        <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: '#E8998D' }} />
+        <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: '#F0C36D' }} />
+        <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: '#93B896' }} />
+      </Box>
+      <Box sx={{ p: 1.4, display: 'flex', flexDirection: 'column', gap: 0.7 }}>
+        <Box sx={{ width: '60%', height: 8, borderRadius: '4px', background: 'rgba(122,143,123,0.25)' }} />
+        <Box sx={{ width: '85%', height: 8, borderRadius: '4px', background: 'rgba(217,162,115,0.25)' }} />
+        <Box sx={{ display: 'flex', gap: 0.6, mt: 0.4 }}>
+          <Box sx={{ width: 28, height: 28, borderRadius: '8px', background: 'rgba(122,143,123,0.18)' }} />
+          <Box sx={{ width: 28, height: 28, borderRadius: '8px', background: 'rgba(216,140,122,0.18)' }} />
+          <Box sx={{ width: 28, height: 28, borderRadius: '8px', background: 'rgba(217,162,115,0.18)' }} />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+// ─── 브라우저 UI 스타일의 작은 플로팅 카드 (주소창 느낌) ──────────────
+function HeroFloatingUrlChip() {
+  return (
+    <Box
+      aria-hidden="true"
+      sx={{
+        position: 'absolute', bottom: 8, left: -46,
+        display: 'flex', alignItems: 'center', gap: 0.8,
+        px: 1.4, py: 0.9, borderRadius: '999px',
+        background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255,255,255,0.65)',
+        boxShadow: '0 12px 30px rgba(122,143,123,0.15)',
+        transform: 'rotate(4deg)',
+        animation: `${floatFast} 8s ease-in-out infinite`,
+        zIndex: 1, pointerEvents: 'none',
+        ...reduceMotion,
+      }}
+    >
+      <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 6px #22C55E88', flexShrink: 0 }} />
+      <Box sx={{ width: 64, height: 6, borderRadius: '4px', background: 'rgba(122,143,123,0.3)' }} />
+    </Box>
+  );
+}
+
+// ─── 전구/로켓/AI/브라우저/코드 미니 아이콘 배지 ───────────────────
+function HeroMiniIcons() {
+  return HERO_MINI_ICONS.map(({ Icon, color, anim, dur, pos }, i) => (
+    <Box
+      key={i}
+      aria-hidden="true"
+      sx={{
+        position: 'absolute', ...pos,
+        width: 44, height: 44, borderRadius: '14px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+        border: `1px solid ${color}30`,
+        boxShadow: `0 10px 24px ${color}22`,
+        color,
+        animation: `${FLOAT_KEYFRAMES[anim]} ${dur} ease-in-out infinite`,
+        zIndex: 1, pointerEvents: 'none',
+        ...reduceMotion,
+      }}
+    >
+      <Icon sx={{ fontSize: 20 }} />
+    </Box>
+  ));
+}
+
+// ─── Hero 우측 Product Builder 카드 ─────────────────────────────
+function ProductBuilderCard({ basicInfo, compact = false }) {
+  const tiltRef = useTiltEffect({ max: 3 });
+  return (
+    <Box
+      ref={tiltRef}
       sx={{
         ...GLASS,
+        position: 'relative', zIndex: 2,
         borderRadius: '28px',
         p: compact ? 2.75 : { xs: 3, md: 3.5 },
         maxWidth: compact ? 320 : 380,
         width: '100%',
         mx: { xs: 'auto', md: 0 },
         boxShadow: '0 20px 60px rgba(122,143,123,0.16)',
-        transition: 'transform 0.35s ease, box-shadow 0.35s ease',
-        '&:hover': { transform: 'scale(1.03)', boxShadow: '0 28px 72px rgba(122,143,123,0.22)' },
+        transformStyle: 'preserve-3d',
+        willChange: 'transform, box-shadow',
+        transform: 'perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg))',
+        transition: 'transform 0.15s ease-out, box-shadow 0.35s ease',
+        '&:hover': {
+          transform: 'perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) scale(1.03)',
+          boxShadow: '0 28px 72px rgba(122,143,123,0.24)',
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+          transform: 'none',
+          '&:hover': { transform: 'scale(1.02)' },
+        },
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
@@ -219,11 +347,72 @@ function ProductBuilderCard({ basicInfo, compact = false }) {
 }
 
 // ─── Hero ─────────────────────────────────────────────────────
+// 아주 천천히(15~20s) 떠다니도록 기존보다 느린 duration 적용
 const HERO_ORBS = [
-  { size: 620, color: 'rgba(122,143,123,0.18)', top: -200, right: -140, anim: floatSlow, dur: '11s' },
-  { size: 460, color: 'rgba(216,140,122,0.16)', bottom: -140, left: -100, anim: floatMed, dur: '13s' },
-  { size: 320, color: 'rgba(217,162,115,0.14)', top: '30%', left: '4%', anim: floatFast, dur: '9s' },
+  { size: 620, color: 'rgba(122,143,123,0.18)', top: -200, right: -140, anim: floatSlow, dur: '17s', parallax: 0.12 },
+  { size: 460, color: 'rgba(216,140,122,0.16)', bottom: -140, left: -100, anim: floatMed, dur: '20s', parallax: -0.08 },
+  { size: 320, color: 'rgba(217,162,115,0.14)', top: '30%', left: '4%', anim: floatFast, dur: '15s', parallax: 0.18 },
 ];
+
+// 작은 원형 오브젝트 — 세이지/테라코타/베이지 톤의 미세한 점, 아주 은은하게 floating
+const HERO_MICRO_DOTS = [
+  { size: 10, color: '#7A8F7B', top: '16%', left: '24%', anim: 'floatSlow', dur: '16s', opacity: 0.3 },
+  { size: 7, color: '#D88C7A', top: '68%', left: '13%', anim: 'floatMed', dur: '19s', opacity: 0.26 },
+  { size: 12, color: '#D9A273', top: '22%', right: '20%', anim: 'floatFast', dur: '14s', opacity: 0.26 },
+  { size: 6, color: '#C99A3E', top: '78%', right: '30%', anim: 'floatSlow', dur: '21s', opacity: 0.24 },
+  { size: 9, color: '#7A8F7B', top: '46%', left: '48%', anim: 'floatMed', dur: '18s', opacity: 0.18 },
+];
+
+// Soft Noise — SVG feTurbulence를 데이터 URI로 인코딩해 아주 옅은 그레인 텍스처를 만든다 (외부 이미지 불필요)
+const HERO_NOISE_SVG = `<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`;
+const HERO_NOISE_BG = `url("data:image/svg+xml,${encodeURIComponent(HERO_NOISE_SVG)}")`;
+
+// 배경 오브젝트 하나 — 바깥 요소는 스크롤 패럴렉스(translate3d)만, 안쪽 요소는 은은한 floating 애니메이션만 담당한다.
+// (두 transform 을 같은 엘리먼트에 두면 CSS 애니메이션이 인라인 transform 을 덮어써 패럴렉스가 씹히므로 분리)
+function ParallaxOrb({ orb, size }) {
+  const ref = useScrollParallax(orb.parallax);
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        position: 'absolute',
+        width: size, height: size,
+        top: orb.top, right: orb.right, bottom: orb.bottom, left: orb.left,
+        pointerEvents: 'none',
+        transform: 'translate3d(0, var(--parallax-y, 0px), 0)',
+        willChange: 'transform',
+      }}
+    >
+      <Box
+        sx={{
+          width: '100%', height: '100%', borderRadius: '50%',
+          background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
+          animation: `${orb.anim} ${orb.dur} ease-in-out infinite`,
+          ...reduceMotion,
+        }}
+      />
+    </Box>
+  );
+}
+
+// 작은 원형 오브젝트들 — 배경 큰 블러 오브젝트보다 튀지 않도록 낮은 opacity로 아주 천천히 floating
+function HeroMicroDots({ count }) {
+  return HERO_MICRO_DOTS.slice(0, count).map((dot, i) => (
+    <Box
+      key={i}
+      aria-hidden="true"
+      sx={{
+        position: 'absolute',
+        top: dot.top, left: dot.left, right: dot.right, bottom: dot.bottom,
+        width: dot.size, height: dot.size, borderRadius: '50%',
+        background: dot.color, opacity: dot.opacity,
+        pointerEvents: 'none', zIndex: 0,
+        animation: `${FLOAT_KEYFRAMES[dot.anim]} ${dot.dur} ease-in-out infinite`,
+        ...reduceMotion,
+      }}
+    />
+  ));
+}
 
 const HeroSection = memo(function HeroSection() {
   const { homeData } = usePortfolio();
@@ -232,6 +421,7 @@ const HeroSection = memo(function HeroSection() {
   const isMobile = useMediaQuery(theme.breakpoints.down(768));
   const isTablet = useMediaQuery(theme.breakpoints.between(768, 1200));
   const isDesktop = useMediaQuery(theme.breakpoints.up(1200));
+  const typedRole = useTypewriter(HERO_ROLE_WORDS, { typingSpeed: 95, deletingSpeed: 45, pauseDuration: 1600 });
 
   const scrollToProjects = useCallback(() => {
     document.getElementById('home-projects-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -243,6 +433,7 @@ const HeroSection = memo(function HeroSection() {
 
   // 모바일에서는 배경 오브젝트 개수/크기를 줄여 과하지 않게 처리
   const orbs = isMobile ? HERO_ORBS.slice(0, 2) : HERO_ORBS;
+  const microDotCount = isMobile ? 2 : isTablet ? 3 : HERO_MICRO_DOTS.length;
 
   return (
     <Box
@@ -255,28 +446,39 @@ const HeroSection = memo(function HeroSection() {
         minHeight: isMobile ? 'auto' : '90vh',
         display: 'flex',
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #FBF6F0 0%, #FBF7F1 45%, #F7F0E8 100%)',
+        background: [
+          'radial-gradient(ellipse 60% 50% at 25% 15%, rgba(217,162,115,0.14), transparent 60%)',
+          'radial-gradient(ellipse 55% 45% at 82% 85%, rgba(216,140,122,0.10), transparent 55%)',
+          'linear-gradient(135deg, #FBF6F0 0%, #FBF7F1 45%, #F7F0E8 100%)',
+        ].join(', '),
         pt: isMobile ? 6 : isTablet ? 9 : 12,
         pb: isMobile ? 8 : isTablet ? 9 : 12,
       }}
     >
-      {/* 배경 블러 오브젝트 — 블루 / 민트 / 퍼플, 은은한 floating 애니메이션 */}
+      {/* Soft Noise — 아주 옅은 그레인 텍스처로 따뜻한 질감 부여 */}
+      <Box
+        aria-hidden="true"
+        sx={{
+          position: 'absolute', inset: 0,
+          backgroundImage: HERO_NOISE_BG,
+          backgroundSize: '140px 140px',
+          opacity: 0.035,
+          mixBlendMode: 'multiply',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* 배경 블러 오브젝트 — 은은한 floating 애니메이션 + 약한 스크롤 패럴렉스 */}
       {orbs.map((orb, i) => (
-        <Box
+        <ParallaxOrb
           key={i}
-          sx={{
-            position: 'absolute',
-            width: isMobile ? orb.size * 0.42 : isTablet ? orb.size * 0.75 : orb.size,
-            height: isMobile ? orb.size * 0.42 : isTablet ? orb.size * 0.75 : orb.size,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
-            top: orb.top, right: orb.right, bottom: orb.bottom, left: orb.left,
-            pointerEvents: 'none',
-            animation: `${orb.anim} ${orb.dur} ease-in-out infinite`,
-            ...reduceMotion,
-          }}
+          orb={orb}
+          size={isMobile ? orb.size * 0.42 : isTablet ? orb.size * 0.75 : orb.size}
         />
       ))}
+
+      {/* 작은 원형 오브젝트 */}
+      <HeroMicroDots count={microDotCount} />
 
       {/* 은은한 라인 액센트 (모바일에서는 생략) */}
       {!isMobile && (
@@ -296,9 +498,25 @@ const HeroSection = memo(function HeroSection() {
           <Box sx={{ width: isMobile ? '100%' : '50%', textAlign: isMobile ? 'center' : 'left' }}>
             <FadeInMount>
               <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 2.5, py: 0.9, mb: 3, borderRadius: '999px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', border: '1px solid rgba(122,143,123,0.2)', boxShadow: '0 2px 12px rgba(122,143,123,0.08)' }}>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px #22C55E88' }} />
-                <Typography variant="caption" sx={{ color: '#7A8F7B', fontWeight: 700, fontSize: '0.78rem', letterSpacing: 0.3 }}>
-                  Product Builder · Available
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px #22C55E88', flexShrink: 0 }} />
+                <Typography
+                  variant="caption"
+                  aria-label={`${HERO_ROLE_WORDS.join(', ')} · Available`}
+                  sx={{ color: '#7A8F7B', fontWeight: 700, fontSize: '0.78rem', letterSpacing: 0.3, display: 'inline-flex', alignItems: 'center', minWidth: 0 }}
+                >
+                  <Box component="span" aria-hidden="true" sx={{ display: 'inline-block', minWidth: { xs: 108, sm: 130 } }}>
+                    {typedRole}
+                    <Box
+                      component="span"
+                      sx={{
+                        display: 'inline-block', width: '1px', height: '0.85em', ml: '2px', verticalAlign: '-0.1em',
+                        background: '#7A8F7B',
+                        animation: `${caretBlink} 1s steps(1) infinite`,
+                        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                      }}
+                    />
+                  </Box>
+                  <Box component="span" sx={{ ml: 0.5 }}>· Available</Box>
                 </Typography>
               </Box>
             </FadeInMount>
@@ -316,18 +534,20 @@ const HeroSection = memo(function HeroSection() {
                   mb: 2.5,
                 }}
               >
-                가르치던 사람에서 만드는 사람으로,
+                <MorphingHeadline phrases={HERO_MORPH_PHRASES} interval={2800} />
                 <br />
                 <Box
                   component="span"
                   sx={{
-                    background: 'linear-gradient(135deg, #7A8F7B 0%, #D9A273 55%, #D88C7A 100%)',
+                    background: 'linear-gradient(120deg, #7A8F7B 0%, #D9A273 35%, #D88C7A 60%, #D9A273 85%, #7A8F7B 100%)',
+                    backgroundSize: '300% auto',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                    animation: `${gradientShift} 8s ease-in-out infinite`,
+                    '@media (prefers-reduced-motion: reduce)': { animation: 'none', backgroundPosition: '50% 50%' },
                   }}
                 >
-                  Product Builder
-                </Box>{' '}
-                {basicInfo.name}
+                  Product Builder {basicInfo.name}
+                </Box>
               </Typography>
             </FadeInMount>
 
@@ -352,16 +572,10 @@ const HeroSection = memo(function HeroSection() {
                 <Button
                   variant="contained" size="large" onClick={scrollToProjects} aria-label="프로젝트 둘러보기 섹션으로 스크롤 이동"
                   sx={{
-                    background: G, color: '#FFF', fontWeight: 700, px: 4.5, py: 1.6, minHeight: 44,
+                    ...gradientButtonSx('#8FA490', '#647566', 'rgba(122,143,123,0.45)'),
+                    color: '#FFF', fontWeight: 700, px: 4.5, py: 1.6, minHeight: 44,
                     borderRadius: '999px', width: isDesktop ? 'auto' : '100%',
                     boxShadow: '0 8px 24px rgba(122,143,123,0.35)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      background: '#647566',
-                      boxShadow: '0 16px 38px rgba(122,143,123,0.45)',
-                      transform: 'scale(1.03) translateY(-2px)',
-                    },
-                    '&:active': { transform: 'scale(0.97)' },
                   }}
                 >
                   프로젝트 둘러보기
@@ -369,17 +583,18 @@ const HeroSection = memo(function HeroSection() {
                 <Button
                   variant="outlined" size="large" onClick={scrollToAbout} aria-label="About Me 섹션으로 스크롤 이동"
                   sx={{
+                    ...outlineButtonSx,
                     borderColor: 'rgba(122,143,123,0.35)', color: '#7A8F7B', fontWeight: 700, px: 4.5, py: 1.6, minHeight: 44,
                     borderRadius: '999px', width: isDesktop ? 'auto' : '100%',
                     backgroundColor: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(122,143,123,0.08)',
-                      borderColor: '#7A8F7B',
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 20px rgba(122,143,123,0.15)',
+                    '@media (hover: hover) and (pointer: fine)': {
+                      '&:hover': {
+                        backgroundColor: 'rgba(122,143,123,0.08)',
+                        borderColor: '#7A8F7B',
+                        transform: 'perspective(700px) rotateX(6deg) translateY(-3px)',
+                        boxShadow: '0 10px 24px rgba(122,143,123,0.2)',
+                      },
                     },
-                    '&:active': { transform: 'scale(0.97)' },
                   }}
                 >
                   About Me
@@ -429,10 +644,20 @@ const HeroSection = memo(function HeroSection() {
             </FadeInMount>
           </Box>
 
-          {/* 오른쪽 — Product Builder 카드 */}
+          {/* 오른쪽 — Product Builder 카드 + 주변 시각 요소 */}
           <Box sx={{ width: isMobile ? '100%' : '50%', display: 'flex', justifyContent: isDesktop ? 'flex-start' : 'center' }}>
             <FadeInMount delay={250}>
-              <ProductBuilderCard basicInfo={basicInfo} compact={isTablet} />
+              <Box sx={{ position: 'relative' }}>
+                {isDesktop && (
+                  <>
+                    <HeroCardGlow />
+                    <HeroBrowserMockup />
+                    <HeroFloatingUrlChip />
+                    <HeroMiniIcons />
+                  </>
+                )}
+                <ProductBuilderCard basicInfo={basicInfo} compact={isTablet} />
+              </Box>
             </FadeInMount>
           </Box>
         </Stack>
@@ -477,7 +702,7 @@ const AboutSection = memo(function AboutSection() {
     <Box id="home-about" component="section" aria-label="어떤 사람인지 소개" sx={{ backgroundColor: '#FFFFFF', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="lg">
         {/* Header */}
-        <FadeIn>
+        <ScrollReveal>
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={sectionLabel}>어떤 사람인지</Box>
             <Typography variant="h3" sx={{ mb: 1, fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
@@ -487,7 +712,7 @@ const AboutSection = memo(function AboutSection() {
               {basicInfo.position}
             </Typography>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         {/* 2-col: stories + profile card */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto' }, gap: 3, mb: 4, alignItems: 'start' }}>
@@ -498,7 +723,7 @@ const AboutSection = memo(function AboutSection() {
                 <Typography variant="body2">About Me 탭에서 이야기를 추가하면 여기에 표시됩니다.</Typography>
               </Box>
             ) : content.map((section, i) => (
-              <FadeIn key={section.id} delay={i * 80}>
+              <ScrollReveal key={section.id} delay={i * 80} scale>
                 <Box
                   sx={{
                     display: 'flex', gap: 2.5, alignItems: 'flex-start',
@@ -523,13 +748,13 @@ const AboutSection = memo(function AboutSection() {
                     </Typography>
                   </Box>
                 </Box>
-              </FadeIn>
+              </ScrollReveal>
             ))}
 
           </Box>
 
           {/* Right — Profile mini-card */}
-          <FadeIn delay={150}>
+          <ScrollReveal delay={150} scale>
             <Box
               sx={{
                 width: { xs: '100%', md: 220 },
@@ -572,12 +797,12 @@ const AboutSection = memo(function AboutSection() {
                 {basicInfo.interest}
               </Typography>
             </Box>
-          </FadeIn>
+          </ScrollReveal>
         </Box>
 
         {/* Top skills pills */}
         {topSkills.length > 0 && (
-          <FadeIn delay={200}>
+          <ScrollReveal delay={200}>
             <Box sx={{ mb: 5 }}>
               <Typography variant="caption" sx={{ color: '#9C9691', fontWeight: 700, fontSize: '0.68rem', letterSpacing: 1, textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
                 주요 스킬
@@ -602,10 +827,10 @@ const AboutSection = memo(function AboutSection() {
                 })}
               </Box>
             </Box>
-          </FadeIn>
+          </ScrollReveal>
         )}
 
-        <FadeIn delay={300}>
+        <ScrollReveal delay={300}>
           <Box sx={{ textAlign: 'center' }}>
             <Button
               variant="contained"
@@ -622,7 +847,7 @@ const AboutSection = memo(function AboutSection() {
               더 알아보기
             </Button>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
       </Container>
     </Box>
   );
@@ -636,7 +861,7 @@ const SkillSection = memo(function SkillSection() {
   return (
     <Box component="section" aria-label="어떤 도구를 쓰는지" sx={{ backgroundColor: '#FAF8F5', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="md" sx={{ textAlign: 'center' }}>
-        <FadeIn>
+        <ScrollReveal>
           <Box sx={sectionLabel}>어떤 도구로</Box>
           <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
             기술 스택
@@ -651,37 +876,43 @@ const SkillSection = memo(function SkillSection() {
             {topSkills.map((skill, i) => {
               const meta = CATEGORY_META[skill.category] || { color: '#7A8F7B', bg: '#FBF6F0' };
               return (
-                <FadeIn key={skill.id} delay={i * 70}>
-                  <Box
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 1.5,
-                      px: 3, py: 1.6, borderRadius: '16px',
-                      background: meta.bg, border: `1.5px solid ${meta.color}25`,
-                      cursor: 'default',
-                      transition: 'all 0.25s ease',
-                      '&:hover': { transform: 'translateY(-5px)', boxShadow: `0 12px 28px ${meta.color}25`, border: `1.5px solid ${meta.color}60` },
-                    }}
-                  >
-                    <Typography sx={{ fontSize: 22, lineHeight: 1 }}>
-                      {ICON_EMOJI[skill.icon] || ICON_EMOJI.default}
-                    </Typography>
-                    <Box sx={{ textAlign: 'left' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 800, color: meta.color, fontSize: '0.9rem', lineHeight: 1.2 }}>
-                        {skill.name}
+                <ScrollReveal key={skill.id} delay={i * 70}>
+                  <Tooltip title={skill.description || skill.category} placement="top" arrow enterTouchDelay={0}>
+                    <Box
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 1.5,
+                        px: 3, py: 1.6, borderRadius: '16px',
+                        background: meta.bg, border: `1.5px solid ${meta.color}25`,
+                        cursor: 'default',
+                        willChange: 'transform, box-shadow',
+                        transition: 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease',
+                        '@media (hover: hover) and (pointer: fine)': {
+                          '&:hover': { transform: 'translateY(-5px)', boxShadow: `0 12px 28px ${meta.color}25`, border: `1.5px solid ${meta.color}60` },
+                          '&:hover .skill-logo': { transform: 'rotate(14deg) scale(1.18)', filter: `drop-shadow(0 0 8px ${meta.color}99)` },
+                        },
+                      }}
+                    >
+                      <Typography className="skill-logo" sx={{ fontSize: 22, lineHeight: 1, ...logoHoverSx(meta.color) }}>
+                        {ICON_EMOJI[skill.icon] || ICON_EMOJI.default}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: `${meta.color}AA`, fontSize: '0.66rem', fontWeight: 600 }}>
-                        {skill.category}
-                      </Typography>
+                      <Box sx={{ textAlign: 'left' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: meta.color, fontSize: '0.9rem', lineHeight: 1.2 }}>
+                          {skill.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: `${meta.color}AA`, fontSize: '0.66rem', fontWeight: 600 }}>
+                          {skill.category}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </FadeIn>
+                  </Tooltip>
+                </ScrollReveal>
               );
             })}
           </Box>
           )}
-        </FadeIn>
+        </ScrollReveal>
 
-        <FadeIn delay={400}>
+        <ScrollReveal delay={400}>
           <Button
             variant="outlined"
             component={Link}
@@ -696,19 +927,143 @@ const SkillSection = memo(function SkillSection() {
           >
             전체 스킬 보기
           </Button>
-        </FadeIn>
+        </ScrollReveal>
       </Container>
     </Box>
   );
 });
 
 // ─── Projects ─────────────────────────────────────────────────
+const HomeProjectCard = memo(function HomeProjectCard({ project, index }) {
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const { ref, active, handlers } = useHoverActive();
+
+  return (
+    <ScrollReveal delay={index * 120} scale>
+      <Box
+        sx={{
+          ...GLASS,
+          borderRadius: '24px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 4px 24px rgba(122,143,123,0.07)',
+          willChange: 'transform, box-shadow',
+          transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease',
+          '@media (hover: hover) and (pointer: fine)': {
+            '&:hover': { transform: 'translateY(-8px) scale(1.015)', boxShadow: '0 22px 52px rgba(122,143,123,0.18)' },
+          },
+        }}
+      >
+        <Box
+          ref={ref}
+          {...handlers}
+          className="zoom-trigger"
+          sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#EFEAE3', overflow: 'hidden', cursor: 'pointer' }}
+        >
+          {!imgError && project.thumbnail_url ? (
+            <>
+              {!imgLoaded && (
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)' }}>
+                  <LoadingSpinner size={7} py={0} />
+                </Box>
+              )}
+              <Box
+                component="img"
+                src={project.thumbnail_url}
+                alt={project.title}
+                loading="lazy"
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: imgLoaded ? 'block' : 'none', ...imageZoomSx(active) }}
+              />
+            </>
+          ) : (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: G }}>
+              <Box sx={{ width: 40, height: 40, borderRadius: 2, background: 'rgba(255,255,255,0.25)' }} />
+            </Box>
+          )}
+          {/* 이미지 오버레이 정보 — 데스크톱 hover / 모바일 tap 시 노출 */}
+          <Box sx={imageOverlaySx(active)}>
+            <Typography sx={{ color: '#FFF', fontWeight: 800, fontSize: '0.85rem', letterSpacing: '-0.01em' }}>
+              {project.title}
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.72rem' }}>
+              자세히 보려면 아래 버튼을 눌러보세요
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', flex: 1, textAlign: 'left' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+            {project.title}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.7, mb: 2, flex: 1, fontSize: '0.84rem' }}>
+            {project.description}
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.7, mb: 2.5 }}>
+            {project.tech_stack.map((tech) => (
+              <Chip
+                key={tech}
+                label={tech}
+                size="small"
+                sx={{
+                  fontSize: '0.68rem', fontWeight: 700, height: 22, borderRadius: '8px',
+                  backgroundColor: `${TECH_COLORS[tech] || '#7A8F7B'}15`,
+                  color: TECH_COLORS[tech] || '#7A8F7B',
+                  border: `1px solid ${TECH_COLORS[tech] || '#7A8F7B'}30`,
+                }}
+              />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {project.detail_url && (
+              <Button
+                variant="contained"
+                size="small"
+                href={project.detail_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                sx={{
+                  ...gradientButtonSx('#8FA490', '#647566', 'rgba(122,143,123,0.38)'),
+                  flex: 1, fontWeight: 700, fontSize: '0.74rem',
+                  borderRadius: '10px', py: 0.8,
+                  boxShadow: '0 4px 12px rgba(122,143,123,0.28)',
+                }}
+              >
+                Live Demo
+              </Button>
+            )}
+            <Button
+              variant="outlined"
+              size="small"
+              href="https://github.com/thdekals724272/vibeCoding"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                ...outlineButtonSx,
+                flex: 1, borderColor: 'rgba(122,143,123,0.28)', color: '#7A8F7B',
+                fontWeight: 700, fontSize: '0.74rem', borderRadius: '10px', py: 0.8,
+                '@media (hover: hover) and (pointer: fine)': {
+                  '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.05)', transform: 'perspective(700px) rotateX(6deg) translateY(-2px)' },
+                },
+              }}
+            >
+              GitHub
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </ScrollReveal>
+  );
+});
+
 const ProjectsSection = memo(function ProjectsSection() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imgErrors, setImgErrors] = useState({});
-  const [imgLoaded, setImgLoaded] = useState({});
-
   useEffect(() => {
     supabase
       .from('projects')
@@ -725,140 +1080,43 @@ const ProjectsSection = memo(function ProjectsSection() {
   return (
     <Box id="home-projects-preview" component="section" aria-label="어떤 프로젝트를 만들었는지" sx={{ backgroundColor: '#FFFFFF', py: { xs: 8, md: 12 } }}>
       <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
-        <FadeIn>
+        <ScrollReveal>
           <Box sx={sectionLabel}>어떤 프로젝트를</Box>
           <Typography variant="h3" sx={{ mb: 1.5, fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
             대표 프로젝트
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B7280', mb: 5 }}>AI와 함께 직접 기획하고 만든 서비스들입니다.</Typography>
-        </FadeIn>
+        </ScrollReveal>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress sx={{ color: '#7A8F7B' }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mb: 5 }}>
+            <ProjectCardSkeletonGrid count={2} />
           </Box>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mb: 5 }}>
             {projects.map((project, i) => (
-              <FadeIn key={project.id} delay={i * 120}>
-                <Box
-                  sx={{
-                    ...GLASS,
-                    borderRadius: '24px',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 4px 24px rgba(122,143,123,0.07)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': { transform: 'translateY(-7px) scale(1.01)', boxShadow: '0 20px 48px rgba(122,143,123,0.16)' },
-                  }}
-                >
-                  <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: '#EFEAE3', overflow: 'hidden' }}>
-                    {!imgErrors[project.id] && project.thumbnail_url ? (
-                      <>
-                        {!imgLoaded[project.id] && (
-                          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)' }}>
-                            <CircularProgress size={24} sx={{ color: '#7A8F7B' }} />
-                          </Box>
-                        )}
-                        <Box
-                          component="img"
-                          src={project.thumbnail_url}
-                          alt={project.title}
-                          loading="lazy"
-                          onLoad={() => setImgLoaded((p) => ({ ...p, [project.id]: true }))}
-                          onError={() => setImgErrors((p) => ({ ...p, [project.id]: true }))}
-                          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: imgLoaded[project.id] ? 'block' : 'none', transition: 'transform 0.4s ease', '&:hover': { transform: 'scale(1.05)' } }}
-                        />
-                      </>
-                    ) : (
-                      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: G }}>
-                        <Box sx={{ width: 40, height: 40, borderRadius: 2, background: 'rgba(255,255,255,0.25)' }} />
-                      </Box>
-                    )}
-                  </Box>
-
-                  <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', flex: 1, textAlign: 'left' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
-                      {project.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#6B7280', lineHeight: 1.7, mb: 2, flex: 1, fontSize: '0.84rem' }}>
-                      {project.description}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.7, mb: 2.5 }}>
-                      {project.tech_stack.map((tech) => (
-                        <Chip
-                          key={tech}
-                          label={tech}
-                          size="small"
-                          sx={{
-                            fontSize: '0.68rem', fontWeight: 700, height: 22, borderRadius: '8px',
-                            backgroundColor: `${TECH_COLORS[tech] || '#7A8F7B'}15`,
-                            color: TECH_COLORS[tech] || '#7A8F7B',
-                            border: `1px solid ${TECH_COLORS[tech] || '#7A8F7B'}30`,
-                          }}
-                        />
-                      ))}
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      {project.detail_url && (
-                        <Button
-                          variant="contained"
-                          size="small"
-                          href={project.detail_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          sx={{
-                            flex: 1, background: G, fontWeight: 700, fontSize: '0.74rem',
-                            borderRadius: '10px', py: 0.8,
-                            boxShadow: '0 4px 12px rgba(122,143,123,0.28)',
-                            '&:hover': { background: '#647566', transform: 'translateY(-1px)' },
-                            transition: 'all 0.2s ease',
-                          }}
-                        >
-                          Live Demo
-                        </Button>
-                      )}
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        href="https://github.com/thdekals724272/vibeCoding"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        sx={{
-                          flex: 1, borderColor: 'rgba(122,143,123,0.28)', color: '#7A8F7B',
-                          fontWeight: 700, fontSize: '0.74rem', borderRadius: '10px', py: 0.8,
-                          '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.05)', transform: 'translateY(-1px)' },
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        GitHub
-                      </Button>
-                    </Box>
-                  </Box>
-                </Box>
-              </FadeIn>
+              <HomeProjectCard key={project.id} project={project} index={i} />
             ))}
           </Box>
         )}
 
-        <FadeIn delay={300}>
+        <ScrollReveal delay={300}>
           <Button
             variant="outlined"
             component={Link}
             to="/projects"
             sx={{
+              ...outlineButtonSx,
               borderColor: 'rgba(122,143,123,0.3)', color: '#7A8F7B', fontWeight: 700,
               px: 5, py: 1.3, borderRadius: '14px', fontSize: '0.95rem',
-              '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'translateY(-2px)' },
-              transition: 'all 0.25s ease',
+              '@media (hover: hover) and (pointer: fine)': {
+                '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'perspective(700px) rotateX(6deg) translateY(-3px)' },
+              },
             }}
           >
             더 보기
           </Button>
-        </FadeIn>
+        </ScrollReveal>
       </Container>
     </Box>
   );
@@ -966,7 +1224,7 @@ const ContactSection = memo(function ContactSection() {
       <Container maxWidth="md">
 
         {/* Header */}
-        <FadeIn>
+        <ScrollReveal>
           <Box sx={{ textAlign: 'center', mb: 7 }}>
             <Box sx={sectionLabel}>Contact</Box>
             <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 1.5, fontSize: { xs: '1.8rem', md: '2.2rem' }, letterSpacing: '-0.02em' }}>
@@ -976,10 +1234,10 @@ const ContactSection = memo(function ContactSection() {
               언제든지 편하게 연락해주세요. 빠르게 답변드리겠습니다.
             </Typography>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         {/* Contact cards */}
-        <FadeIn delay={100}>
+        <ScrollReveal delay={100} scale>
           <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: { xs: 'column', sm: 'row' } }}>
             {/* Email */}
             <Box sx={{ ...contactCardSx, '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 16px 40px rgba(122,143,123,0.12)', border: '1px solid rgba(122,143,123,0.25)' } }}>
@@ -1011,40 +1269,40 @@ const ContactSection = memo(function ContactSection() {
               </Box>
             </Box>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         {/* SNS icons */}
-        <FadeIn delay={200}>
+        <ScrollReveal delay={200}>
           <Box sx={{ display: 'flex', gap: 1.5, mb: 7, justifyContent: 'center' }}>
             {[
               { icon: <GitHubIcon sx={{ fontSize: 20 }} />, label: 'GitHub', href: 'https://github.com/thdekals724272', color: '#2F2F2F', bg: '#EFEAE3' },
               { icon: <LinkedInIcon sx={{ fontSize: 20 }} />, label: 'LinkedIn', href: '#', color: '#0A66C2', bg: '#EFF6FF' },
               { icon: <InstagramIcon sx={{ fontSize: 20 }} />, label: 'Instagram', href: '#', color: '#E1306C', bg: '#FFF0F5' },
             ].map(({ icon, label, href, color, bg }) => (
+              <Tooltip key={label} title={label} placement="top" arrow enterTouchDelay={0}>
               <Box
-                key={label}
                 component="a"
                 href={href}
                 target="_blank" rel="noopener noreferrer"
-                title={label}
+                aria-label={label}
                 sx={{
                   width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   borderRadius: '12px', background: bg, border: '1px solid transparent',
                   color: '#6B7280', textDecoration: 'none',
-                  transition: 'all 0.22s ease',
-                  '&:hover': { color, background: bg, border: `1px solid ${color}30`, transform: 'translateY(-3px)', boxShadow: `0 8px 20px ${color}22` },
+                  ...iconGlowSx(color),
                 }}
               >
                 {icon}
               </Box>
+              </Tooltip>
             ))}
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         <Divider sx={{ mb: 7, borderColor: 'rgba(122,143,123,0.1)' }} />
 
         {/* Guestbook header */}
-        <FadeIn>
+        <ScrollReveal>
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Typography variant="h5" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 1, letterSpacing: '-0.02em' }}>
               방명록
@@ -1053,7 +1311,7 @@ const ContactSection = memo(function ContactSection() {
               방문해주셔서 감사합니다. 짧은 메시지를 남겨주세요 😊
             </Typography>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         {/* Guestbook form */}
         <Box

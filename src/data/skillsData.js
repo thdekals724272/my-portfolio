@@ -55,6 +55,14 @@ export const CATEGORY_META = {
   Design: { color: '#C97B63', bg: '#F5E6E0' },
 };
 
+// 숙련도가 아닌 "프로젝트에서 실제로 얼마나 활용했는지"를 표현하는 핵심 역량 지표
+export const CORE_COMPETENCIES = [
+  { id: 'planning', label: 'Service Planning', value: 88, color: '#7A8F7B' },
+  { id: 'ai-dev', label: 'AI-Assisted Development', value: 95, color: '#D9A273' },
+  { id: 'uiux', label: 'UI/UX Thinking', value: 85, color: '#D88C7A' },
+  { id: 'web', label: 'Web Implementation', value: 80, color: '#C99A3E' },
+];
+
 export const skillsData = [
   {
     id: 1, icon: 'atom', name: 'React', level: 70,

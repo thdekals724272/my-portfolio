@@ -41,7 +41,9 @@ function Navbar() {
   const isHome = location.pathname === '/';
 
   // 1) 스크롤 다운 시 헤더 숨김 / 스크롤 업 시 표시 + 2) 읽기 진행률
+  // rAF로 스로틀링해 한 프레임에 한 번만 계산하도록 최적화
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
       const y = window.scrollY;
       const doc = document.documentElement;
@@ -56,10 +58,16 @@ function Navbar() {
         setHidden(false);
       }
       lastScrollY.current = y;
+      ticking = false;
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(handleScroll);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Home 페이지에서만: IntersectionObserver로 현재 보고 있는 섹션 감지

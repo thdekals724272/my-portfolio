@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useInView } from '../hooks/useInView';
+import { useHoverActive } from '../hooks/useHoverActive';
+import { gradientButtonSx, outlineButtonSx, imageZoomSx, imageOverlaySx } from '../styles/interactions';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { ProjectCardSkeletonGrid } from '../components/ProjectCardSkeleton';
+import ScrollReveal from '../components/ScrollReveal';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import GitHubIcon from '@mui/icons-material/GitHub';
@@ -28,28 +31,13 @@ const TECH_COLORS = {
   'Unsplash API': '#2F2F2F',
 };
 
-function FadeIn({ children, delay = 0 }) {
-  const [ref, inView] = useInView();
-  return (
-    <Box
-      ref={ref}
-      sx={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? 'translateY(0)' : 'translateY(24px)',
-        transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
-
 function ProjectCard({ project, index }) {
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const { ref, active, handlers } = useHoverActive();
 
   return (
-    <FadeIn delay={index * 100}>
+    <ScrollReveal delay={index * 100} scale>
       <Box
         sx={{
           ...GLASS,
@@ -58,22 +46,26 @@ function ProjectCard({ project, index }) {
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 4px 24px rgba(122,143,123,0.07)',
-          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-          '&:hover': {
-            transform: 'translateY(-8px) scale(1.01)',
-            boxShadow: '0 24px 56px rgba(122,143,123,0.18)',
+          willChange: 'transform, box-shadow',
+          transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease',
+          '@media (hover: hover) and (pointer: fine)': {
+            '&:hover': { transform: 'translateY(-8px) scale(1.015)', boxShadow: '0 24px 56px rgba(122,143,123,0.18)' },
           },
           height: '100%',
         }}
       >
         {/* Thumbnail */}
         <Box
+          ref={ref}
+          {...handlers}
+          className="zoom-trigger"
           sx={{
             position: 'relative',
             width: '100%',
             aspectRatio: '16/9',
             backgroundColor: '#EFEAE3',
             overflow: 'hidden',
+            cursor: 'pointer',
           }}
         >
           {!imgError && project.thumbnail_url ? (
@@ -86,7 +78,7 @@ function ProjectCard({ project, index }) {
                     background: 'linear-gradient(135deg, #FBF6F0, #F7EFE6)',
                   }}
                 >
-                  <CircularProgress size={24} sx={{ color: '#7A8F7B' }} />
+                  <LoadingSpinner size={7} py={0} />
                 </Box>
               )}
               <Box
@@ -99,8 +91,7 @@ function ProjectCard({ project, index }) {
                 sx={{
                   width: '100%', height: '100%', objectFit: 'cover',
                   display: imgLoaded ? 'block' : 'none',
-                  transition: 'transform 0.45s ease',
-                  '&:hover': { transform: 'scale(1.06)' },
+                  ...imageZoomSx(active),
                 }}
               />
             </>
@@ -116,6 +107,15 @@ function ProjectCard({ project, index }) {
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.68rem' }}>Preview unavailable</Typography>
             </Box>
           )}
+          {/* 이미지 오버레이 정보 — 데스크톱 hover / 모바일 tap 시 노출 */}
+          <Box sx={imageOverlaySx(active)}>
+            <Typography sx={{ color: '#FFF', fontWeight: 800, fontSize: '0.88rem', letterSpacing: '-0.01em' }}>
+              {project.title}
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.72rem' }}>
+              {project.tech_stack?.slice(0, 3).join(' · ')}
+            </Typography>
+          </Box>
         </Box>
 
         {/* Body */}
@@ -154,11 +154,10 @@ function ProjectCard({ project, index }) {
                 endIcon={<OpenInNewIcon sx={{ fontSize: '0.8rem !important' }} />}
                 onClick={(e) => e.stopPropagation()}
                 sx={{
-                  flex: 1, background: G, fontWeight: 700, fontSize: '0.74rem',
+                  ...gradientButtonSx('#8FA490', '#647566', 'rgba(122,143,123,0.38)'),
+                  flex: 1, fontWeight: 700, fontSize: '0.74rem',
                   borderRadius: '10px', py: 0.9,
                   boxShadow: '0 4px 14px rgba(122,143,123,0.3)',
-                  '&:hover': { background: '#647566', transform: 'translateY(-1px)', boxShadow: '0 8px 22px rgba(122,143,123,0.38)' },
-                  transition: 'all 0.22s ease',
                 }}
               >
                 Live Demo
@@ -173,10 +172,12 @@ function ProjectCard({ project, index }) {
               startIcon={<GitHubIcon sx={{ fontSize: '0.9rem !important' }} />}
               onClick={(e) => e.stopPropagation()}
               sx={{
+                ...outlineButtonSx,
                 flex: 1, borderColor: 'rgba(122,143,123,0.25)', color: '#7A8F7B',
                 fontWeight: 700, fontSize: '0.74rem', borderRadius: '10px', py: 0.9,
-                '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.05)', transform: 'translateY(-1px)' },
-                transition: 'all 0.22s ease',
+                '@media (hover: hover) and (pointer: fine)': {
+                  '&:hover': { borderColor: '#7A8F7B', background: 'rgba(122,143,123,0.05)', transform: 'perspective(700px) rotateX(6deg) translateY(-2px)' },
+                },
               }}
             >
               GitHub
@@ -184,7 +185,7 @@ function ProjectCard({ project, index }) {
           </Box>
         </Box>
       </Box>
-    </FadeIn>
+    </ScrollReveal>
   );
 }
 
@@ -262,8 +263,8 @@ function Projects() {
       {/* Project grid */}
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-            <CircularProgress sx={{ color: '#7A8F7B' }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+            <ProjectCardSkeletonGrid count={6} />
           </Box>
         ) : projects.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 12 }}>

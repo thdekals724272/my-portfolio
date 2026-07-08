@@ -1,8 +1,14 @@
 import { useState, useMemo, useRef, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInView } from '../hooks/useInView';
+import { useHoverActive } from '../hooks/useHoverActive';
+import { useCountUp } from '../hooks/useCountUp';
 import { usePortfolio } from '../context/PortfolioContext';
-import { ICON_EMOJI, ICON_OPTIONS, CATEGORIES, CATEGORY_META } from '../data/skillsData';
+import { ICON_EMOJI, ICON_OPTIONS, CATEGORIES, CATEGORY_META, CORE_COMPETENCIES } from '../data/skillsData';
+import { gradientButtonSx, outlineButtonSx, logoHoverSx } from '../styles/interactions';
+import RadialProgress from '../components/RadialProgress';
+import StatCounter from '../components/StatCounter';
+import ScrollReveal from '../components/ScrollReveal';
 
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -58,15 +64,6 @@ const sectionLabel = {
   fontSize: '0.7rem', fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
 };
 
-function FadeIn({ children, delay = 0 }) {
-  const [ref, inView] = useInView();
-  return (
-    <Box ref={ref} sx={{ opacity: inView ? 1 : 0, transform: inView ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms` }}>
-      {children}
-    </Box>
-  );
-}
-
 function InfoRow({ icon, label, value }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 1.2, borderBottom: '1px solid rgba(122,143,123,0.07)', '&:last-child': { borderBottom: 'none' } }}>
@@ -86,8 +83,11 @@ function InfoRow({ icon, label, value }) {
 // ─── Photo Upload ─────────────────────────────────────────────
 function PhotoArea({ photo, onPhotoChange }) {
   const fileRef = useRef(null);
+  const { ref, active, handlers } = useHoverActive();
   return (
     <Box
+      ref={ref}
+      {...handlers}
       onClick={() => fileRef.current?.click()}
       role="button"
       tabIndex={0}
@@ -100,16 +100,19 @@ function PhotoArea({ photo, onPhotoChange }) {
         boxShadow: '0 12px 40px rgba(122,143,123,0.3)',
         border: '4px solid rgba(255,255,255,0.9)',
         overflow: 'hidden',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        '&:hover': { transform: 'scale(1.04)', boxShadow: '0 16px 48px rgba(122,143,123,0.4)' },
-        '&:hover .photo-overlay': { opacity: 1 },
+        willChange: 'transform, box-shadow',
+        transition: 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease',
+        '@media (hover: hover) and (pointer: fine)': {
+          '&:hover': { transform: 'scale(1.06) rotate(2deg)', boxShadow: '0 16px 48px rgba(122,143,123,0.4)' },
+          '&:hover .photo-overlay': { opacity: 1 },
+        },
       }}
     >
       {photo
         ? <Box component="img" src={photo} alt="프로필" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         : <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48 }}>👤</Box>
       }
-      <Box className="photo-overlay" sx={{ position: 'absolute', inset: 0, background: 'rgba(122,143,123,0.65)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.22s ease', gap: 0.5 }}>
+      <Box className="photo-overlay" sx={{ position: 'absolute', inset: 0, background: 'rgba(122,143,123,0.65)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: active ? 1 : 0, transition: 'opacity 0.22s ease', gap: 0.5 }}>
         <CameraAltIcon sx={{ color: '#FFF', fontSize: 24 }} />
         <Typography variant="caption" sx={{ color: '#FFF', fontWeight: 700, fontSize: '0.65rem' }}>사진 변경</Typography>
       </Box>
@@ -159,6 +162,7 @@ function BasicInfoDialog({ open, onClose, info, onSave }) {
 const SkillCard = memo(function SkillCard({ skill, onEdit }) {
   const [ref, inView] = useInView();
   const meta = CATEGORY_META[skill.category] || CATEGORY_META['Frontend'];
+  const count = useCountUp(skill.level, { active: inView, duration: 1200, delay: 200 });
 
   return (
     <Tooltip
@@ -202,7 +206,7 @@ const SkillCard = memo(function SkillCard({ skill, onEdit }) {
         </IconButton>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ width: 44, height: 44, borderRadius: '13px', background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '13px', background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, ...logoHoverSx(meta.color) }}>
             {ICON_EMOJI[skill.icon] || ICON_EMOJI.default}
           </Box>
           <Chip
@@ -214,10 +218,10 @@ const SkillCard = memo(function SkillCard({ skill, onEdit }) {
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: '0.9rem' }}>{skill.name}</Typography>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.8rem' }}>{skill.level}%</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.8rem', fontVariantNumeric: 'tabular-nums' }}>{count}%</Typography>
           </Box>
           <Box sx={{ height: 7, borderRadius: '999px', background: '#EFEAE3', overflow: 'hidden' }}>
-            <Box sx={{ height: '100%', width: inView ? `${skill.level}%` : '0%', borderRadius: '999px', background: `linear-gradient(90deg, ${meta.color}BB, ${meta.color})`, transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.25s' }} />
+            <Box sx={{ height: '100%', width: `${count}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${meta.color}BB, ${meta.color})` }} />
           </Box>
         </Box>
       </Box>
@@ -399,16 +403,16 @@ function SkillsSection({ onSaved }) {
   return (
     <Box component="section" sx={{ background: '#FAF8F5', py: { xs: 7, md: 11 } }}>
       <Container maxWidth="lg">
-        <FadeIn>
+        <ScrollReveal>
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={sectionLabel}>Skills</Box>
             <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em', mb: 1 }}>기술 스택</Typography>
             <Typography variant="body2" sx={{ color: '#6B7280' }}>카드에 마우스를 올리거나 포커스하면 설명과 수정 버튼을 볼 수 있어요.</Typography>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         {/* Category filter */}
-        <FadeIn delay={80}>
+        <ScrollReveal delay={80}>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 5 }}>
             {categories.map((cat) => {
               const meta = CATEGORY_META[cat];
@@ -427,26 +431,26 @@ function SkillsSection({ onSaved }) {
               );
             })}
           </Box>
-        </FadeIn>
+        </ScrollReveal>
 
         {/* Grid */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, mb: 5 }}>
           {filtered.map((skill, i) => (
-            <FadeIn key={skill.id} delay={i * 60}>
+            <ScrollReveal key={skill.id} delay={i * 60} scale>
               <SkillCard skill={skill} onEdit={handleEditSkill} />
-            </FadeIn>
+            </ScrollReveal>
           ))}
         </Box>
 
         {/* Add button */}
-        <FadeIn delay={200}>
+        <ScrollReveal delay={200}>
           <Box sx={{ textAlign: 'center' }}>
             <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}
               sx={{ borderColor: 'rgba(122,143,123,0.3)', color: '#7A8F7B', fontWeight: 700, px: 4, py: 1.1, borderRadius: '14px', fontSize: '0.88rem', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'translateY(-2px)' }, transition: 'all 0.25s ease' }}>
               스킬 추가
             </Button>
           </Box>
-        </FadeIn>
+        </ScrollReveal>
       </Container>
 
       <SkillEditDialog
@@ -460,6 +464,126 @@ function SkillsSection({ onSaved }) {
     </Box>
   );
 }
+
+// ─── Core Competencies (원형 프로그레스) ────────────────────────
+const CoreCompetenciesSection = memo(function CoreCompetenciesSection() {
+  return (
+    <Box component="section" aria-label="핵심 역량" sx={{ backgroundColor: '#FFFFFF', py: { xs: 7, md: 10 } }}>
+      <Container maxWidth="md">
+        <ScrollReveal>
+          <Box sx={{ textAlign: 'center', mb: 5 }}>
+            <Box sx={sectionLabel}>Core Competencies</Box>
+            <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em', mb: 1 }}>
+              핵심 역량
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#6B7280' }}>
+              단순 숙련도가 아닌, 실제 프로젝트에서 얼마나 활용했는지를 나타냅니다.
+            </Typography>
+          </Box>
+        </ScrollReveal>
+
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 3, sm: 2 } }}>
+          {CORE_COMPETENCIES.map((item, i) => (
+            <ScrollReveal key={item.id} delay={i * 90} scale>
+              <RadialProgress value={item.value} label={item.label} color={item.color} delay={i * 120} />
+            </ScrollReveal>
+          ))}
+        </Box>
+      </Container>
+    </Box>
+  );
+});
+
+// ─── Journey Timeline (교사 → Product Builder) ───────────────────
+const JOURNEY_STEPS = [
+  { emoji: '🎓', title: '교사', desc: '사람의 성장을 돕고, 쉽게 이해할 수 있도록 설명하는 경험을 쌓았습니다.', color: '#7A8F7B' },
+  { emoji: '💡', title: '서비스 기획', desc: '일상과 현장에서 발견한 문제를 서비스 아이디어로 구체화합니다.', color: '#D9A273' },
+  { emoji: '🛠️', title: 'AI 기반 웹 제작', desc: 'Claude, VS Code, React, Supabase를 활용해 아이디어를 실제 웹서비스로 구현합니다.', color: '#D88C7A' },
+  { emoji: '🚀', title: 'Product Builder', desc: '기획부터 UI/UX, 개발까지 직접 경험하며 사람들에게 도움이 되는 서비스를 만들어갑니다.', color: '#C99A3E' },
+];
+
+const JourneyTimeline = memo(function JourneyTimeline() {
+  return (
+    <Box component="section" aria-label="교사에서 Product Builder까지의 여정" sx={{ backgroundColor: '#FAF8F5', py: { xs: 7, md: 10 } }}>
+      <Container maxWidth="lg">
+        <ScrollReveal>
+          <Box sx={{ textAlign: 'center', mb: { xs: 5, md: 6 } }}>
+            <Box sx={sectionLabel}>Journey</Box>
+            <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em', mb: 1 }}>
+              가르치던 사람에서 만드는 사람으로
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#6B7280' }}>
+              교사에서 Product Builder까지, 지금까지 걸어온 흐름입니다.
+            </Typography>
+          </Box>
+        </ScrollReveal>
+
+        {/* 태블릿 이상: 가로 타임라인 */}
+        <Box sx={{ display: { xs: 'none', sm: 'block' }, position: 'relative' }}>
+          <Box sx={{ position: 'absolute', top: 28, left: '12.5%', right: '12.5%', height: 2, background: 'linear-gradient(90deg, #7A8F7B, #D9A273, #D88C7A, #C99A3E)', opacity: 0.22, borderRadius: 2 }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+            {JOURNEY_STEPS.map((step, i) => (
+              <ScrollReveal key={step.title} delay={i * 100} scale>
+                <Box sx={{ textAlign: 'center', px: 1 }}>
+                  <Box
+                    sx={{
+                      width: 56, height: 56, borderRadius: '50%', mx: 'auto', mb: 2,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 26, position: 'relative', zIndex: 1,
+                      background: `${step.color}1F`, border: `2px solid ${step.color}45`,
+                      boxShadow: `0 8px 20px ${step.color}22`,
+                    }}
+                  >
+                    {step.emoji}
+                  </Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.8, fontSize: '0.98rem' }}>
+                    {step.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6B7280', fontSize: '0.82rem', lineHeight: 1.7 }}>
+                    {step.desc}
+                  </Typography>
+                </Box>
+              </ScrollReveal>
+            ))}
+          </Box>
+        </Box>
+
+        {/* 모바일: 세로 타임라인 */}
+        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+          <Box sx={{ position: 'relative', pl: 4 }}>
+            <Box sx={{ position: 'absolute', top: 8, bottom: 8, left: 19, width: 2, background: 'linear-gradient(180deg, #7A8F7B, #D9A273, #D88C7A, #C99A3E)', opacity: 0.22, borderRadius: 2 }} />
+            {JOURNEY_STEPS.map((step, i) => (
+              <ScrollReveal key={step.title} delay={i * 100}>
+                <Box sx={{ position: 'relative', pb: i === JOURNEY_STEPS.length - 1 ? 0 : 4 }}>
+                  <Box
+                    sx={{
+                      position: 'absolute', left: -32, top: 0,
+                      width: 40, height: 40, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 20, zIndex: 1,
+                      background: `${step.color}1F`, border: `2px solid ${step.color}45`,
+                      boxShadow: `0 6px 16px ${step.color}22`,
+                    }}
+                  >
+                    {step.emoji}
+                  </Box>
+                  <Box sx={{ ...GLASS, borderRadius: '16px', p: 2, ml: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 0.5, fontSize: '0.95rem' }}>
+                      {step.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#6B7280', fontSize: '0.82rem', lineHeight: 1.7 }}>
+                      {step.desc}
+                    </Typography>
+                  </Box>
+                </Box>
+              </ScrollReveal>
+            ))}
+          </Box>
+        </Box>
+      </Container>
+    </Box>
+  );
+});
 
 // ─── Main Page ────────────────────────────────────────────────
 function AboutMe() {
@@ -567,23 +691,36 @@ function AboutMe() {
               </Box>
             </Box>
           </Box>
+
+          {/* Stats */}
+          <ScrollReveal delay={150}>
+            <Box sx={{ mt: { xs: 5, md: 7 }, pt: { xs: 3.5, md: 4 }, borderTop: '1px solid rgba(122,143,123,0.12)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: { xs: 1.5, sm: 3 } }}>
+              <StatCounter value={3} suffix="+" label="Projects" color="#7A8F7B" />
+              <StatCounter value={aboutMeData.skills.length} suffix="+" label="Skills" color="#D9A273" delay={80} />
+              <StatCounter value={5} suffix="+" label="Tools" color="#D88C7A" delay={160} />
+              <StatCounter value={2} suffix="+" label="Services Built" color="#C99A3E" delay={240} />
+            </Box>
+          </ScrollReveal>
         </Container>
       </Box>
+
+      {/* ── Journey Timeline ── */}
+      <JourneyTimeline />
 
       {/* ── Story Sections ── */}
       <Box sx={{ backgroundColor: '#FFFFFF', py: { xs: 7, md: 11 } }}>
         <Container maxWidth="md">
-          <FadeIn>
+          <ScrollReveal>
             <Box sx={{ textAlign: 'center', mb: 5 }}>
               <Box sx={sectionLabel}>Story</Box>
               <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em' }}>나의 이야기</Typography>
               <Typography variant="body2" sx={{ color: '#6B7280', mt: 1.5 }}>항목을 클릭하고 ✏️ 버튼으로 내용을 편집할 수 있어요.</Typography>
             </Box>
-          </FadeIn>
+          </ScrollReveal>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {sections.map((section, i) => (
-              <FadeIn key={section.id} delay={i * 80}>
+              <ScrollReveal key={section.id} delay={i * 80} scale>
                 <Accordion
                   expanded={expanded === section.id}
                   onChange={(_, isExpanded) => setExpanded(isExpanded ? section.id : false)}
@@ -671,11 +808,14 @@ function AboutMe() {
                     </Box>
                   </AccordionDetails>
                 </Accordion>
-              </FadeIn>
+              </ScrollReveal>
             ))}
           </Box>
         </Container>
       </Box>
+
+      {/* ── Core Competencies ── */}
+      <CoreCompetenciesSection />
 
       {/* ── Skills ── */}
       <SkillsSection onSaved={showToast} />
@@ -684,20 +824,26 @@ function AboutMe() {
       <Box sx={{ background: 'linear-gradient(135deg, #FBF6F0 0%, #F7EFE6 100%)', py: { xs: 8, md: 11 }, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', width: 360, height: 360, borderRadius: '50%', background: 'radial-gradient(circle, rgba(122,143,123,0.1) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
         <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
-          <FadeIn>
+          <ScrollReveal>
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#2F2F2F', mb: 1.5, letterSpacing: '-0.02em' }}>함께 만들고 싶은 게 있으신가요?</Typography>
             <Typography variant="body1" sx={{ color: '#6B7280', mb: 4, lineHeight: 1.8 }}>아이디어를 서비스로 만들고 싶다면 언제든 연락해주세요.</Typography>
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button variant="contained" size="large" component={Link} to="/"
-                sx={{ background: G, fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4, boxShadow: '0 8px 24px rgba(122,143,123,0.3)', '&:hover': { background: '#647566', transform: 'translateY(-2px)' }, transition: 'all 0.25s ease' }}>
+                sx={{ ...gradientButtonSx('#8FA490', '#647566', 'rgba(122,143,123,0.4)'), fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4, boxShadow: '0 8px 24px rgba(122,143,123,0.3)' }}>
                 연락하기
               </Button>
               <Button variant="outlined" size="large" component={Link} to="/projects"
-                sx={{ borderColor: 'rgba(122,143,123,0.3)', color: '#7A8F7B', fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'translateY(-2px)' }, transition: 'all 0.25s ease' }}>
+                sx={{
+                  ...outlineButtonSx,
+                  borderColor: 'rgba(122,143,123,0.3)', color: '#7A8F7B', fontWeight: 700, borderRadius: '14px', px: 4, py: 1.4, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
+                  '@media (hover: hover) and (pointer: fine)': {
+                    '&:hover': { background: 'rgba(122,143,123,0.06)', borderColor: '#7A8F7B', transform: 'perspective(700px) rotateX(6deg) translateY(-3px)' },
+                  },
+                }}>
                 Projects 보기
               </Button>
             </Box>
-          </FadeIn>
+          </ScrollReveal>
         </Container>
       </Box>
 
