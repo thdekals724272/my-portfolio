@@ -181,8 +181,11 @@ const SkillCard = memo(function SkillCard({ skill, onEdit }) {
           display: 'flex', flexDirection: 'column', gap: 1.5,
           boxShadow: '0 2px 14px rgba(122,143,123,0.05)',
           cursor: 'default', position: 'relative',
-          transition: 'all 0.28s ease',
-          '&:hover': { transform: 'translateY(-6px)', boxShadow: `0 16px 40px ${meta.color}26`, border: `1px solid ${meta.color}35` },
+          willChange: 'transform, box-shadow',
+          transition: 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease',
+          '@media (hover: hover) and (pointer: fine)': {
+            '&:hover': { transform: 'translateY(-6px) scale(1.02)', boxShadow: `0 16px 40px ${meta.color}26`, border: `1px solid ${meta.color}35` },
+          },
           '&:hover .skill-edit-btn, &:focus-within .skill-edit-btn': { opacity: 1 },
         }}
       >
@@ -211,7 +214,12 @@ const SkillCard = memo(function SkillCard({ skill, onEdit }) {
           </Box>
           <Chip
             label={skill.category} size="small"
-            sx={{ height: 20, fontSize: '0.62rem', fontWeight: 700, borderRadius: '7px', color: meta.color, background: meta.bg, border: `1px solid ${meta.color}25`, '& .MuiChip-label': { px: 1 } }}
+            sx={{
+              height: 22, fontSize: '0.64rem', fontWeight: 800, letterSpacing: 0.2, borderRadius: '999px',
+              color: meta.color, background: meta.bg, border: `1px solid ${meta.color}30`,
+              boxShadow: `0 2px 8px ${meta.color}1a`,
+              '& .MuiChip-label': { px: 1.3 },
+            }}
           />
         </Box>
 
@@ -221,7 +229,7 @@ const SkillCard = memo(function SkillCard({ skill, onEdit }) {
             <Typography variant="caption" sx={{ fontWeight: 700, color: meta.color, fontSize: '0.8rem', fontVariantNumeric: 'tabular-nums' }}>{count}%</Typography>
           </Box>
           <Box sx={{ height: 7, borderRadius: '999px', background: '#EFEAE3', overflow: 'hidden' }}>
-            <Box sx={{ height: '100%', width: `${count}%`, borderRadius: '999px', background: `linear-gradient(90deg, ${meta.color}BB, ${meta.color})` }} />
+            <Box sx={{ height: '100%', width: `${count}%`, borderRadius: '999px', background: 'linear-gradient(90deg, #8FA490, #7A8F7B)' }} />
           </Box>
         </Box>
       </Box>
@@ -400,6 +408,17 @@ function SkillsSection({ onSaved }) {
     return [...list].sort((a, b) => b.level - a.level);
   }, [skills, activeCategory]);
 
+  // '전체' 선택 시에만 카테고리별로 자연스럽게 그룹핑해서 보여준다 (특정 카테고리 필터 중엔 기존처럼 flat grid)
+  const groupedSkills = useMemo(() => {
+    if (activeCategory !== '전체') return null;
+    const groups = {};
+    filtered.forEach((s) => {
+      (groups[s.category] ??= []).push(s);
+    });
+    const orderedCats = [...CATEGORIES.filter((c) => groups[c]), ...Object.keys(groups).filter((c) => !CATEGORIES.includes(c))];
+    return orderedCats.map((cat) => ({ category: cat, items: groups[cat] }));
+  }, [filtered, activeCategory]);
+
   return (
     <Box component="section" sx={{ background: '#FAF8F5', py: { xs: 7, md: 11 } }}>
       <Container maxWidth="lg">
@@ -407,7 +426,12 @@ function SkillsSection({ onSaved }) {
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={sectionLabel}>Skills</Box>
             <Typography variant="h3" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: { xs: '1.8rem', md: '2.1rem' }, letterSpacing: '-0.02em', mb: 1 }}>기술 스택</Typography>
-            <Typography variant="body2" sx={{ color: '#6B7280' }}>카드에 마우스를 올리거나 포커스하면 설명과 수정 버튼을 볼 수 있어요.</Typography>
+            <Typography variant="body2" sx={{ color: '#6B7280', maxWidth: 480, mx: 'auto', lineHeight: 1.7 }}>
+              서비스를 만들기 위해 다양한 기술과 AI 도구를 활용하며 꾸준히 배우고 있습니다.
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#9C9691', display: 'block', mt: 1 }}>
+              카드에 마우스를 올리거나 포커스하면 설명과 수정 버튼을 볼 수 있어요.
+            </Typography>
           </Box>
         </ScrollReveal>
 
@@ -433,14 +457,42 @@ function SkillsSection({ onSaved }) {
           </Box>
         </ScrollReveal>
 
-        {/* Grid */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, mb: 5 }}>
-          {filtered.map((skill, i) => (
-            <ScrollReveal key={skill.id} delay={i * 60} scale>
-              <SkillCard skill={skill} onEdit={handleEditSkill} />
-            </ScrollReveal>
-          ))}
-        </Box>
+        {/* Grid — '전체'일 땐 카테고리별 그룹, 특정 카테고리 선택 시엔 flat grid */}
+        {groupedSkills ? (
+          <Box sx={{ mb: 5, display: 'flex', flexDirection: 'column', gap: 4.5 }}>
+            {groupedSkills.map(({ category, items }, groupIndex) => {
+              const meta = CATEGORY_META[category] || CATEGORY_META['Frontend'];
+              return (
+                <Box key={category}>
+                  <ScrollReveal delay={groupIndex * 60}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 2.2 }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#2F2F2F', fontSize: '0.98rem', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                        {category}
+                      </Typography>
+                      <Box sx={{ flex: 1, height: '1px', background: `${meta.color}28` }} />
+                    </Box>
+                  </ScrollReveal>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+                    {items.map((skill, i) => (
+                      <ScrollReveal key={skill.id} delay={i * 60} scale>
+                        <SkillCard skill={skill} onEdit={handleEditSkill} />
+                      </ScrollReveal>
+                    ))}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ) : (
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5, mb: 5 }}>
+            {filtered.map((skill, i) => (
+              <ScrollReveal key={skill.id} delay={i * 60} scale>
+                <SkillCard skill={skill} onEdit={handleEditSkill} />
+              </ScrollReveal>
+            ))}
+          </Box>
+        )}
 
         {/* Add button */}
         <ScrollReveal delay={200}>
